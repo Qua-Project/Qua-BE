@@ -23,24 +23,30 @@ public class ProductEntity {
 
     private String productName;
 
+    @Lob
     private String productImage;
 
     private Integer productPrice;
 
-    @ManyToOne
-    @JoinColumn(name = "brand_id")
-    private BrandEntity brand;
+    @Lob
+    private String productInfo;
+
+//    @ManyToOne
+//    @JoinColumn(name = "brand_id")
+//    private BrandEntity brand;
+    private String brandName;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
 
     @Builder
-    public ProductEntity(String productName, String productImage, int productPrice, BrandEntity brand, CategoryEntity category) {
+    public ProductEntity(String productName, String productImage, int productPrice, String productInfo, String brandName, CategoryEntity category) {
         this.productName = productName;
         this.productImage = productImage;
         this.productPrice = productPrice;
-        this.brand = brand;
+        this.productInfo = productInfo;
+        this.brandName = brandName;
         this.category = category;
     }
 }

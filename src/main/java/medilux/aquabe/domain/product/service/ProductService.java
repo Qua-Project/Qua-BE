@@ -8,8 +8,8 @@ import medilux.aquabe.domain.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +32,7 @@ public class ProductService {
                         .productName(product.getProductName())
                         .productImage(product.getProductImage())
                         .productPrice(product.getProductPrice())
-                        .brandName(product.getBrand().getBrandName())
+                        .brandName(product.getBrandName())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -47,7 +47,7 @@ public class ProductService {
                 .productName(product.getProductName())
                 .productImage(product.getProductImage())
                 .productPrice(product.getProductPrice())
-                .brandName(product.getBrand().getBrandName())
+                .brandName(product.getBrandName())
                 .categoryName(product.getCategory().getCategoryName())
                 .build();
     }
