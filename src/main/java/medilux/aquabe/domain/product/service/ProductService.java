@@ -8,6 +8,7 @@ import medilux.aquabe.domain.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +38,7 @@ public class ProductService {
     }
 
     // 제품 상세 조회 로직
-    public ProductDetailSearchResponse getProductDetail(String productId) {
+    public ProductDetailSearchResponse getProductDetail(UUID productId) {
         ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 제품이 존재하지 않습니다."));
 

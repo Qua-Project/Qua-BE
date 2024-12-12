@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
@@ -27,7 +28,7 @@ public class ProductController {
 
     // 제품 상세 조회 API
     @GetMapping("/{product_id}")
-    public ResponseEntity<ProductDetailSearchResponse> getProductDetail(@PathVariable String product_id) {
+    public ResponseEntity<ProductDetailSearchResponse> getProductDetail(@PathVariable UUID product_id) {
         ProductDetailSearchResponse product = productService.getProductDetail(product_id);
         return ResponseEntity.ok(product);
     }
