@@ -54,4 +54,14 @@ public class UserEntity {
         this.gender = gender;
         this.birthDate = birthDate;
     }
+
+    public void update(String username, String email, String telephone,
+                       String userImage, Integer userAge) {
+        this.username = username;
+        this.email = email;
+        this.telephone = telephone;
+        this.userImage = userImage;
+        this.userAge = userAge;
+    }
+
 }
