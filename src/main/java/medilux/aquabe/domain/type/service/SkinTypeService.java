@@ -1,6 +1,9 @@
 package medilux.aquabe.domain.type.service;
 
 import lombok.RequiredArgsConstructor;
+import medilux.aquabe.common.exception.Type.DuplicateSkinTypeException;
+import medilux.aquabe.common.exception.Type.SkinNotFoundException;
+import medilux.aquabe.common.exception.User.UserNotFoundException;
 import medilux.aquabe.domain.type.entity.SkinTypeEntity;
 import medilux.aquabe.domain.type.repository.SkinTypeRepository;
 import medilux.aquabe.domain.type.dto.SkinTypeRequest;
@@ -32,7 +35,7 @@ public class SkinTypeService {
     @Transactional(readOnly = true)
     public SkinTypeResponse getSkinType(UUID userId) {
         SkinTypeEntity skinType = skinTypeRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자의 피부 타입 정보가 없습니다."));
+                .orElseThrow(SkinNotFoundException::new);
         return new SkinTypeResponse(skinType);
     }
 
@@ -40,7 +43,7 @@ public class SkinTypeService {
     @Transactional
     public void createSkinType(UUID userId, SkinTypeRequest request) {
         if (skinTypeRepository.findByUserId(userId).isPresent()) {
-            throw new IllegalArgumentException("이미 피부 타입 정보가 존재합니다.");
+            throw new DuplicateSkinTypeException();
         }
         SkinTypeEntity skinType = new SkinTypeEntity(
                 userId,
@@ -56,7 +59,7 @@ public class SkinTypeService {
     @Transactional
     public void updateSkinType(UUID userId, SkinTypeRequest request) {
         SkinTypeEntity skinType = skinTypeRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자의 피부 타입 정보가 없습니다."));
+                .orElseThrow(SkinNotFoundException::new);
         skinType.updateSkinType(
                 request.getSkinType(),
                 request.getUbunScore(),
@@ -73,7 +76,7 @@ public class SkinTypeService {
         List<SkinTypeEntity> skinTypeEntities = skinTypeUsersRepository.findBySkinType(typeName);
 
         if (skinTypeEntities.isEmpty()) {
-            throw new IllegalArgumentException("해당 피부 타입의 사용자가 존재하지 않습니다.");
+            throw new SkinNotFoundException();
         }
 
         // 사용자별 화장대 점수 및 피부 타입 데이터 변환
@@ -81,7 +84,7 @@ public class SkinTypeService {
                 .map(skinType -> {
                     // 사용자 정보 조회
                     UserEntity user = userRepository.findById(skinType.getUserId())
-                            .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+                            .orElseThrow(UserNotFoundException::new);
 
                     // 사용자 화장대 점수 조회
                     UserVanityEntity vanity = userVanityRepository.findByUserId(user.getUserId())
