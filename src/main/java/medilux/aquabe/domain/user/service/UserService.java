@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
+
 
 @Service
 @RequiredArgsConstructor
@@ -16,15 +18,22 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final S3ImageService s3ImageService;
+
     // 회원가입
-    public UserSignUpResponse signUp(UserSignUpRequest request) {
-        // 이메일 중복 확인
-        if (userRepository.existsByEmail(request.getEmail())) {
+    public UserSignUpResponse signUp(UserSignUpRequest request, String imageUrl) {
+        // 닉네임 중복 확인
+        if (userRepository.existsByUsername(request.getUsername())) {
             return UserSignUpResponse.builder()
                     .status(409)
-                    .message("사용 중인 이메일입니다.")
+                    .message("사용 중인 닉네임입니다.")
                     .build();
         }
+
+//        String imageUrl = "";
+//        if(!imageFile.isEmpty()) {
+//            imageUrl = s3ImageService.upload(imageFile);
+//        }
 
         // 사용자 생성 및 저장
         UserEntity userEntity = UserEntity.builder()
@@ -33,7 +42,7 @@ public class UserService {
                 .email(request.getEmail())
                 .telephone(request.getTelephone())
                 .userAge(request.getUserAge())
-                .userImage(request.getUserImage())
+                .userImage(imageUrl)
                 .gender(request.getGender())
                 .birthDate(request.getBirthDate())
                 .build();
@@ -49,7 +58,7 @@ public class UserService {
                 .password(userEntity.getPassword()) // 실제 비밀번호 대신 암호화된 데이터 권장
                 .telephone(userEntity.getTelephone())
                 .userAge(userEntity.getUserAge())
-                .userImage(userEntity.getUserImage())
+                .userImage(imageUrl)
                 .gender(userEntity.getGender())
                 .birthDate(userEntity.getBirthDate())
                 .createdAt(LocalDateTime.now())
@@ -115,6 +124,8 @@ public class UserService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         userRepository.delete(user);
+        // s3에서 이미지 삭제
+        s3ImageService.deleteImageFromS3(user.getUserImage());
 
         return UserDeleteResponse.builder()
                 .message("사용자 삭제에 성공했습니다.")

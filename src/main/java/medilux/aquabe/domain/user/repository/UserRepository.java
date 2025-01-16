@@ -9,6 +9,7 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<UserEntity, UUID> {
 
     boolean existsByEmail(String email); // 이메일 중복 확인
+    boolean existsByUsername(String username); // 사용자 닉네임 중복 확인
     Optional<UserEntity> findByEmail(String email); // 이메일로 사용자 조회
 }
 

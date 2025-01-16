@@ -3,6 +3,7 @@ package medilux.aquabe.domain.user.dto;
 import lombok.Builder;
 import lombok.Getter;
 import medilux.aquabe.domain.user.entity.Gender;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
