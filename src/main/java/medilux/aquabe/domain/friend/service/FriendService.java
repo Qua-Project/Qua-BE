@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import medilux.aquabe.common.exception.Friend.DuplicateFriendException;
 import medilux.aquabe.common.exception.Friend.SelfFriendOperationException;
 import medilux.aquabe.common.exception.User.UserNotFoundException;
+import medilux.aquabe.domain.friend.dto.FriendDetailResponse;
 import medilux.aquabe.domain.friend.entity.FriendEntity;
 import medilux.aquabe.domain.friend.repository.FriendRepository;
 import medilux.aquabe.domain.friend.dto.FriendResponse;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import medilux.aquabe.common.exception.Friend.FriendNotFoundException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -23,7 +25,7 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final UserRepository userRepository;
 
-    // 관심 친구 추가
+    // 팔로우 추가
     @Transactional
     public FriendResponse addFriend(UUID userId, UUID friendUserId) {
         // 이미 친구로 등록되어 있는지 확인
@@ -46,7 +48,7 @@ public class FriendService {
         return new FriendResponse(friendEntity);
     }
 
-    // 관심 친구 삭제
+    // 팔로우 취소
     @Transactional
     public void removeFriend(UUID userId, UUID friendUserId) {
         if (userId.equals(friendUserId)) {
@@ -58,22 +60,31 @@ public class FriendService {
         friendRepository.delete(friendEntity);
     }
 
-    // 관심 친구 목록 조회
+    // 팔로우 목록 조회
     @Transactional(readOnly = true)
-    public List<FriendResponse> getFriends(UUID userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException();
-        }
-
-        List<FriendEntity> friends = friendRepository.findByUserId(userId);
-        return friends.stream()
-                .map(FriendResponse::new)
-                .collect(Collectors.toList());
+    public List<FriendDetailResponse> getFollowingsWithDetails(UUID userId) {
+        return friendRepository.findFollowingsWithDetails(userId);
     }
 
-//    // 관심 친구 조회
-//    @Transactional(readOnly = true)
-//    public List<FriendEntity> getFriends(UUID userId) {
-//        return friendRepository.findByUserId(userId);
-//    }
+    // 팔로잉 목록 조회
+    @Transactional(readOnly = true)
+    public List<FriendDetailResponse> getFollowersWithDetails(UUID userId) {
+        return friendRepository.findFollowersWithDetails(userId);
+    }
+
+    // 팔로잉, 팔로워 수 조회
+    @Transactional(readOnly = true)
+    public Map<String, Integer> getFriendCounts(UUID userId) {
+        // 팔로워 수: friend_user_id가 해당 userId인 경우
+        int followerCount = friendRepository.findByFriendUserId(userId).size();
+
+        // 팔로잉 수: user_id가 해당 userId인 경우
+        int followingCount = friendRepository.findByUserId(userId).size();
+
+        return Map.of(
+                "followCnt", followingCount,
+                "followerCnt", followerCount
+        );
+    }
+
 }
