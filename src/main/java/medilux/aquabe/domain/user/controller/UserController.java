@@ -1,8 +1,10 @@
 package medilux.aquabe.domain.user.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import medilux.aquabe.domain.user.dto.*;
+import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.service.S3ImageService;
 import medilux.aquabe.domain.user.service.UserService;
 import org.springframework.http.MediaType;
@@ -24,6 +26,12 @@ public class UserController {
 
     private final UserService userService;
     private final S3ImageService s3ImageService;
+
+    //카카오 로그인 & 회원가입
+    @GetMapping("/login/kakao")
+    public ResponseEntity<UserEntity> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
+        return ResponseEntity.ok(userService.oAuthLogin(accessCode, httpServletResponse));
+    }
 
     @PostMapping(value = "/sign-up", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserSignUpResponse> signUp(
