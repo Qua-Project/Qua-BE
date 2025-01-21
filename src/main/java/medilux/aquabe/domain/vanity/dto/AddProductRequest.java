@@ -12,4 +12,5 @@ import java.util.UUID;
 public class AddProductRequest {
     private UUID productId;
     private Integer compatibilityScore;
+//    private String skinType;
 }

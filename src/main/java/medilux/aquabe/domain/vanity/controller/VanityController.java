@@ -35,7 +35,7 @@ public class VanityController {
     public ResponseEntity<VanityProductsEntity> addProductToVanity(
             @PathVariable("user_id") UUID userId,
             @RequestBody AddProductRequest request) {
-        VanityProductsEntity vanity = vanityService.addProduct(userId, request.getProductId(), request.getCompatibilityScore());
+        VanityProductsEntity vanity = vanityService.addProduct(userId, request);
         return ResponseEntity.status(201).body(vanity);
     }
 
