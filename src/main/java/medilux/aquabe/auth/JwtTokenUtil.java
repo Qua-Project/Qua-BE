@@ -11,13 +11,23 @@ import java.util.Date;
 @Component
 public class JwtTokenUtil {
     public static String createToken(String email, String secretKey, long expireTimeMs) {
+        try {
+            System.out.println("email = " + email);
+            System.out.println("secretKey = " + secretKey);
+            System.out.println("expireTimeMs = " + expireTimeMs);
+            System.out.println("토큰생성좀 해보자");
 
-        return Jwts.builder()
-                .claim("email", email)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expireTimeMs))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
-                .compact();
+            return Jwts.builder()
+                    .claim("email", email)
+                    .issuedAt(new Date(System.currentTimeMillis()))
+                    .expiration(new Date(System.currentTimeMillis() + expireTimeMs))
+                    .signWith(SignatureAlgorithm.HS256, secretKey)
+                    .compact();
+        } catch (Exception e) {
+            System.err.println("토큰 생성 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static String getEmail(String token, String secretKey) {

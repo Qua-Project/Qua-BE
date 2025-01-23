@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -45,22 +46,43 @@ public class UserService {
         KakaoResponse.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         String email = kakaoProfile.getKakaoAccount().getEmail();
 
+        
         UserEntity user = userRepository.findByEmail(email)
                 .orElseGet(() -> createNewUser(kakaoProfile));
+        System.out.println("user = " + user);
+
+//        UserEntity tempUser = userRepository.findByEmail(email)
+//        System.out.println("user = " + user);
 
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
-        httpServletResponse.setHeader("Authorization", token);
+        System.out.println("token = " + token);
+        httpServletResponse.setHeader("Authorization", "Bearer " + token);
 
+        System.out.println("token = " + token);
+        System.out.println("나도 된거 아닌가?");
+
+        //그럼 여기선 그냥 토큰 발급을 하면 될거고
         return user;
     }
 
+
     private UserEntity createNewUser(KakaoResponse.KakaoProfile kakaoProfile) {
+        System.out.println(" 나까진 온겨? " );
+        System.out.println("트랜잭션 활성화 여부: " + TransactionSynchronizationManager.isActualTransactionActive());
+
         UserEntity newUser = UserEntity.builder()
                 .username(kakaoProfile.getKakaoAccount().getProfile().getNickname())
                 .email(kakaoProfile.getKakaoAccount().getEmail())
                 .password("1234")
                 .build();
-        return userRepository.save(newUser);
+
+        System.out.println("newUser 생성 전: " + newUser);
+
+        UserEntity savedUser = userRepository.save(newUser);
+
+        System.out.println("저장된 newUser: " + savedUser);
+
+        return savedUser;
     }
 
     // 회원가입
