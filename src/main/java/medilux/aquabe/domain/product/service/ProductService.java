@@ -5,6 +5,7 @@ import medilux.aquabe.domain.product.dto.ProductDetailSearchResponse;
 import medilux.aquabe.domain.product.dto.ProductSearchResponse;
 import medilux.aquabe.domain.product.entity.ProductEntity;
 import medilux.aquabe.domain.product.repository.ProductRepository;
+import medilux.aquabe.domain.product.repository.ProductUsedFrequencyRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,34 +17,35 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductUsedFrequencyRepository productUsedFrequencyRepository;
 
     // 제품 검색 로직
-    public List<ProductSearchResponse> searchProducts(String query, Integer category) {
-        List<ProductEntity> products;
+    public List<ProductSearchResponse> searchProducts(String query, Integer category, String type) {
+        // query와 category만 있는 경우 처리
+        List<Object[]> filteredProducts = productUsedFrequencyRepository.findProductsByFilters(
+                (query == null || query.isBlank()) ? null : query,
+                category,
+                type
+        );
 
-        if ((query == null || query.isBlank()) && category == null) {
-            // query와 category가 모두 비어있으면 모든 제품 가져오기
-            products = productRepository.findAll();
-        } else if (query == null || query.isBlank()) {
-            // query가 비어있고 category만 있으면 해당 카테고리의 모든 제품 가져오기
-            products = productRepository.findByCategory_CategoryId(category);
-        } else if (category == null) {
-            // query만 있고 category가 없으면 query에 해당하는 제품 가져오기
-            products = productRepository.findByProductNameContaining(query);
-        } else {
-            // query와 category 둘 다 있는 경우
-            products = productRepository.findByProductNameContainingAndCategory_CategoryId(query, category);
-        }
+        // 결과를 ProductSearchResponse로 변환
+        return filteredProducts.stream()
+                .map(result -> {
+                    UUID productId = (UUID) result[0];
+                    Long totalFrequency = (Long) result[1];
 
-        // 검색 결과를 ProductSearchResponse로 변환
-        return products.stream()
-                .map(product -> ProductSearchResponse.builder()
-                        .productId(product.getProductId())
-                        .productName(product.getProductName())
-                        .productImage(product.getProductImage())
-                        .productPrice(product.getProductPrice())
-                        .brandName(product.getBrandName()) // Brand 객체에서 이름 가져오기
-                        .build())
+                    // ProductEntity 조회
+                    ProductEntity product = productRepository.findById(productId)
+                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 제품입니다: " + productId));
+
+                    return ProductSearchResponse.builder()
+                            .productId(product.getProductId())
+                            .productName(product.getProductName())
+                            .productImage(product.getProductImage())
+                            .productPrice(product.getProductPrice())
+                            .brandName(product.getBrandName())
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 

@@ -18,19 +18,17 @@ public class ProductController {
 
     private final ProductService productService;
 
-    // 제품 검색 API
+    // 제품 검색 이름 API
     @GetMapping("/search")
     public ResponseEntity<List<ProductSearchResponse>> searchProducts(
             @RequestParam(name = "query", required = false) String query,
-            @RequestParam(name = "arg0", required = false) String arg0,
-            @RequestParam(name = "category", required = false) Integer category) {
+            @RequestParam(name = "category", required = false) Integer category,
+            @RequestParam(name = "type", required = false) String type) {
 
-        // 우선순위: query > arg0
-        String actualQuery = (query != null) ? query : arg0;
-
-        List<ProductSearchResponse> products = productService.searchProducts(actualQuery, category);
+        List<ProductSearchResponse> products = productService.searchProducts(query, category, type);
         return ResponseEntity.ok(products);
     }
+
 
 
     // 제품 상세 조회 API
