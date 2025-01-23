@@ -14,6 +14,7 @@ import medilux.aquabe.domain.vanity.repository.UserVanityRepository;
 import medilux.aquabe.domain.vanity.repository.VanityProductsRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,30 +41,38 @@ public class VanityService {
 
     // 화장대에 제품 추가
     @Transactional
-    public VanityProductsEntity addProduct(UUID userId, AddProductRequest request) {
-        // 1. SkinType 조회
+    public List<VanityProductsEntity> addProducts(UUID userId, List<AddProductRequest> requests) {
+        // SkinType 조회
         String skinType = skinTypeService.getSkinType(userId).getSkinType();
 
-        // 2. 제품 존재 여부 확인
-        ProductEntity product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 제품입니다."));
+        List<VanityProductsEntity> addedProducts = new ArrayList<>();
 
-        // 3. 화장대에 제품 추가
-        VanityProductsEntity vanityProduct = VanityProductsEntity.builder()
-                .userId(userId)
-                .product(product)
-                .compatibilityScore(request.getCompatibilityScore())
-                .build();
-        vanityProductsRepository.save(vanityProduct);
+        // 리스트에 모든 제품 저장
+        for (AddProductRequest request : requests) {
+            // 제품 존재 여부 확인
+            ProductEntity product = productRepository.findById(request.getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 제품입니다."));
 
-        // 4. ProductUsedFrequency 테이블 업데이트
-        updateProductFrequency(request.getProductId(), skinType);
+            // 화장대에 제품 추가
+            VanityProductsEntity vanityProduct = VanityProductsEntity.builder()
+                    .userId(userId)
+                    .product(product)
+                    .compatibilityScore(request.getCompatibilityScore())
+                    .build();
+            vanityProductsRepository.save(vanityProduct);
 
-        // 5. 사용자 화장대 점수 업데이트
-        updateVanityScore(userId, request.getCompatibilityScore());
+            // 제품 화장대 저장 횟수 업데이트
+            updateProductFrequency(request.getProductId(), skinType);
 
-        return vanityProduct;
+            // 사용자 화장대 점수 업데이트
+            updateVanityScore(userId, request.getCompatibilityScore());
+
+            addedProducts.add(vanityProduct);
+        }
+
+        return addedProducts;
     }
+
 
     // ProductUsedFrequency 테이블에 빈도 업데이트
     private void updateProductFrequency(UUID productId, String skinType) {

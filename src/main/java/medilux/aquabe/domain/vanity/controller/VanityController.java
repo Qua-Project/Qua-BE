@@ -32,12 +32,14 @@ public class VanityController {
     }
 
     @PostMapping
-    public ResponseEntity<VanityProductsEntity> addProductToVanity(
+    public ResponseEntity<List<VanityProductsEntity>> addProductsToVanity(
             @PathVariable("user_id") UUID userId,
-            @RequestBody AddProductRequest request) {
-        VanityProductsEntity vanity = vanityService.addProduct(userId, request);
-        return ResponseEntity.status(201).body(vanity);
+            @RequestBody List<AddProductRequest> requests) {
+        // list로 제품 받기
+        List<VanityProductsEntity> addedProducts = vanityService.addProducts(userId, requests);
+        return ResponseEntity.status(201).body(addedProducts);
     }
+
 
 
     @DeleteMapping("/{product_id}")
