@@ -18,28 +18,38 @@ import static org.hibernate.annotations.UuidGenerator.Style.RANDOM;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity {
 
+    //진짜 그냥 로그인만 되게 만들어버려?? 그럼 딱 로그인만하고, 나머지는 알아서 채워넣게 해도 됨 ㅇㅇ
+    //비밀번호는 필요 없을거고,
     @Id
     @UuidGenerator(style = RANDOM)
     private UUID userId;
 
+    @Column(nullable = true)
     private String username;
 
+    @Column(nullable = true)
     private String password;
 
     @Column(unique = true)
     private String email;
 
+    @Column(nullable = true)
     private String telephone;
 
+    @Column(nullable = true)
     private LocalDate createdAt = LocalDate.now();
 
+    @Column(nullable = true)
     private String userImage;
 
+    @Column(nullable = true)
     private Integer userAge;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
     private Gender gender;
 
+    @Column(nullable = true)
     private LocalDate birthDate;
 
     @Builder

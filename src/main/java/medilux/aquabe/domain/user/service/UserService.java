@@ -1,14 +1,23 @@
 
 package medilux.aquabe.domain.user.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import medilux.aquabe.auth.JwtTokenUtil;
+import medilux.aquabe.auth.KakaoUtil;
 import medilux.aquabe.domain.user.dto.*;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.repository.UserRepository;
+import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -19,6 +28,68 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final S3ImageService s3ImageService;
+
+    private final KakaoUtil kakaoUtil;
+
+
+    @Value("${spring.jwt.secret}")
+    private String secretKey;
+
+    @Value("${spring.jwt.expired-time}")
+    private Long expiredMs;
+
+    //카카오 회원가입 & 로그인
+    @Transactional
+    public void oAuthLogin(String accessCode, HttpServletResponse httpServletResponse){
+        KakaoResponse.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
+        System.out.println("oAuthToken 출력 = " + oAuthToken);
+        KakaoResponse.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
+        String email = kakaoProfile.getKakaoAccount().getEmail();
+
+        
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseGet(() -> createNewUser(kakaoProfile));
+        System.out.println("user = " + user);
+
+
+        String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
+        System.out.println("token = " + token);
+        httpServletResponse.setHeader("Authorization", "Bearer " + token);
+
+        System.out.println("token = " + token);
+    }
+
+
+    private UserEntity createNewUser(KakaoResponse.KakaoProfile kakaoProfile) {
+        System.out.println(" 나까진 온겨? " );
+        System.out.println("트랜잭션 활성화 여부: " + TransactionSynchronizationManager.isActualTransactionActive());
+
+        UserEntity newUser = UserEntity.builder()
+                .username(kakaoProfile.getKakaoAccount().getProfile().getNickname())
+                .email(kakaoProfile.getKakaoAccount().getEmail())
+                .password("1234")
+                .build();
+
+        System.out.println("newUser 생성 전: " + newUser);
+
+        UserEntity savedUser = userRepository.save(newUser);
+
+        System.out.println("저장된 newUser: " + savedUser);
+
+        return savedUser;
+    }
+
+    public UserResponse findUser(String loginEmail){
+        UserEntity user = userRepository.findByEmail(loginEmail)
+                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
+
+        return UserResponse.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .userImage(user.getUserImage())
+                .username(user.getUsername()).build();
+
+    }
 
     // 회원가입
     public UserSignUpResponse signUp(UserSignUpRequest request, String imageUrl) {
@@ -130,5 +201,15 @@ public class UserService {
         return UserDeleteResponse.builder()
                 .message("사용자 삭제에 성공했습니다.")
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public UserEntity getLoginUserByEmail(String loginId) {
+        if(loginId == null){
+            new BadRequestException("로그인 후 사용가능합니다.");
+        }
+        UserEntity user = userRepository.findByEmail(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        return user;
     }
 }

@@ -1,12 +1,16 @@
 package medilux.aquabe.domain.user.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import medilux.aquabe.domain.user.dto.*;
+import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.service.S3ImageService;
 import medilux.aquabe.domain.user.service.UserService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +28,20 @@ public class UserController {
 
     private final UserService userService;
     private final S3ImageService s3ImageService;
+
+    //카카오 로그인 & 회원가입
+    @GetMapping("/login/kakao")
+    public ResponseEntity<Void> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
+        userService.oAuthLogin(accessCode, httpServletResponse);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> findUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+        return ResponseEntity.ok(userService.findUser(loginEmail));
+    }
 
     @PostMapping(value = "/sign-up", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserSignUpResponse> signUp(
