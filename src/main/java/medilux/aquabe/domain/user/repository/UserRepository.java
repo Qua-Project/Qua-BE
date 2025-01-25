@@ -3,6 +3,7 @@ package medilux.aquabe.domain.user.repository;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -14,8 +15,7 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     Optional<UserEntity> findByEmail(String email); // 이메일로 사용자 조회
 
     @Query("SELECT u.userId FROM UserEntity u WHERE u.email = :email")
-    Optional<UUID> findUserIdByEmail(String email);
-
+    Optional<UUID> findUserIdByEmail(@Param("email") String email);
 
 }
 
