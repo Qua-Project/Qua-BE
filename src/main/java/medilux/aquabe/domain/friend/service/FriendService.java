@@ -9,6 +9,8 @@ import medilux.aquabe.domain.friend.entity.FriendEntity;
 import medilux.aquabe.domain.friend.repository.FriendRepository;
 import medilux.aquabe.domain.friend.dto.FriendResponse;
 import medilux.aquabe.domain.user.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import medilux.aquabe.common.exception.Friend.FriendNotFoundException;
@@ -27,7 +29,8 @@ public class FriendService {
 
     // 팔로우 추가
     @Transactional
-    public FriendResponse addFriend(UUID userId, UUID friendUserId) {
+    public FriendResponse addFriend(String loginEmail, UUID friendUserId) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         // 이미 친구로 등록되어 있는지 확인
         if (friendRepository.findByUserIdAndFriendUserId(userId, friendUserId).isPresent()) {
             throw new DuplicateFriendException();
@@ -50,7 +53,9 @@ public class FriendService {
 
     // 팔로우 취소
     @Transactional
-    public void removeFriend(UUID userId, UUID friendUserId) {
+    public void removeFriend(String loginEmail, UUID friendUserId) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+
         if (userId.equals(friendUserId)) {
             throw new SelfFriendOperationException("삭제");
         }
@@ -62,19 +67,22 @@ public class FriendService {
 
     // 팔로우 목록 조회
     @Transactional(readOnly = true)
-    public List<FriendDetailResponse> getFollowingsWithDetails(UUID userId) {
+    public List<FriendDetailResponse> getFollowingsWithDetails(String loginEmail) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         return friendRepository.findFollowingsWithDetails(userId);
     }
 
     // 팔로잉 목록 조회
     @Transactional(readOnly = true)
-    public List<FriendDetailResponse> getFollowersWithDetails(UUID userId) {
+    public List<FriendDetailResponse> getFollowersWithDetails(String loginEmail) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         return friendRepository.findFollowersWithDetails(userId);
     }
 
     // 팔로잉, 팔로워 수 조회
     @Transactional(readOnly = true)
-    public Map<String, Integer> getFriendCounts(UUID userId) {
+    public Map<String, Integer> getFriendCounts(String loginEmail) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         // 팔로워 수: friend_user_id가 해당 userId인 경우
         int followerCount = friendRepository.findByFriendUserId(userId).size();
 

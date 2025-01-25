@@ -33,7 +33,8 @@ public class SkinTypeService {
 
     // 피부 타입 조회
     @Transactional(readOnly = true)
-    public SkinTypeResponse getSkinType(UUID userId) {
+    public SkinTypeResponse getSkinType(String loginEmail) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         SkinTypeEntity skinType = skinTypeRepository.findByUserId(userId)
                 .orElseThrow(SkinNotFoundException::new);
         return new SkinTypeResponse(skinType);
@@ -41,7 +42,8 @@ public class SkinTypeService {
 
     // 피부 타입 등록
     @Transactional
-    public void createSkinType(UUID userId, SkinTypeRequest request) {
+    public void createSkinType(String loginEmail, SkinTypeRequest request) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         if (skinTypeRepository.findByUserId(userId).isPresent()) {
             throw new DuplicateSkinTypeException();
         }
@@ -57,7 +59,9 @@ public class SkinTypeService {
 
     // 피부 타입 수정
     @Transactional
-    public void updateSkinType(UUID userId, SkinTypeRequest request) {
+    public void updateSkinType(String loginEmail, SkinTypeRequest request) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+
         SkinTypeEntity skinType = skinTypeRepository.findByUserId(userId)
                 .orElseThrow(SkinNotFoundException::new);
         skinType.updateSkinType(

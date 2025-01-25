@@ -1,18 +1,20 @@
 package medilux.aquabe.domain.vanity.service;
 
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.domain.product.entity.ProductEntity;
 import medilux.aquabe.domain.product.entity.ProductUsedFrequencyEntity;
 import medilux.aquabe.domain.product.repository.ProductRepository;
 import medilux.aquabe.domain.product.repository.ProductUsedFrequencyRepository;
 import medilux.aquabe.domain.type.service.SkinTypeService;
+import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.dto.AddProductRequest;
 import medilux.aquabe.domain.vanity.entity.UserVanityEntity;
 import medilux.aquabe.domain.vanity.entity.VanityProductsEntity;
 import medilux.aquabe.domain.vanity.repository.UserVanityRepository;
 import medilux.aquabe.domain.vanity.repository.VanityProductsRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,23 +29,29 @@ public class VanityService {
     private final VanityProductsRepository vanityProductsRepository;
     private final UserVanityRepository userVanityRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
     private final ProductUsedFrequencyRepository productUsedFrequencyRepository;
 
     // 모든 화장대 제품 조회
-    public List<VanityProductsEntity> getAllVanityProducts(UUID userId) {
+    @Transactional(readOnly = true)
+    public List<VanityProductsEntity> getAllVanityProducts(String loginEmail) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         return vanityProductsRepository.findByUserId(userId);
     }
 
     // 카테고리별 제품 조회
-    public List<VanityProductsEntity> getProductsByCategory(UUID userId, Integer categoryId) {
+    @Transactional(readOnly = true)
+    public List<VanityProductsEntity> getProductsByCategory(String loginEmail, Integer categoryId) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         return vanityProductsRepository.findByUserIdAndProductCategoryCategoryId(userId, categoryId);
     }
 
     // 화장대에 제품 추가
     @Transactional
-    public List<VanityProductsEntity> addProducts(UUID userId, List<AddProductRequest> requests) {
+    public List<VanityProductsEntity> addProducts(String loginEmail, List<AddProductRequest> requests) {
         // SkinType 조회
-        String skinType = skinTypeService.getSkinType(userId).getSkinType();
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+        String skinType = skinTypeService.getSkinType(loginEmail).getSkinType();
 
         List<VanityProductsEntity> addedProducts = new ArrayList<>();
 
@@ -103,7 +111,10 @@ public class VanityService {
     }
 
     // 화장대에서 제품 삭제
-    public void removeProduct(UUID userId, UUID productId) {
+    @Transactional
+    public void removeProduct(String loginEmail, UUID productId) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+
         VanityProductsEntity vanityProduct = vanityProductsRepository.findByUserIdAndProductProductId(userId, productId)
                 .orElseThrow(() -> new IllegalArgumentException("화장대에서 해당 제품을 찾을 수 없습니다."));
 
@@ -112,7 +123,9 @@ public class VanityService {
     }
 
     // 화장대 점수 조회
-    public int getVanityScore(UUID userId) {
+    @Transactional(readOnly = true)
+    public int getVanityScore(String loginEmail) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
         return userVanityRepository.findByUserId(userId)
                 .map(UserVanityEntity::getVanityScore)
                 .orElse(0);

@@ -42,43 +42,32 @@ public class UserService {
     @Transactional
     public void oAuthLogin(String accessCode, HttpServletResponse httpServletResponse){
         KakaoResponse.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
-        System.out.println("oAuthToken 출력 = " + oAuthToken);
         KakaoResponse.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         String email = kakaoProfile.getKakaoAccount().getEmail();
 
-        
         UserEntity user = userRepository.findByEmail(email)
                 .orElseGet(() -> createNewUser(kakaoProfile));
-        System.out.println("user = " + user);
-
 
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
-        System.out.println("token = " + token);
+
         httpServletResponse.setHeader("Authorization", "Bearer " + token);
 
-        System.out.println("token = " + token);
     }
 
 
     private UserEntity createNewUser(KakaoResponse.KakaoProfile kakaoProfile) {
-        System.out.println(" 나까진 온겨? " );
-        System.out.println("트랜잭션 활성화 여부: " + TransactionSynchronizationManager.isActualTransactionActive());
-
         UserEntity newUser = UserEntity.builder()
                 .username(kakaoProfile.getKakaoAccount().getProfile().getNickname())
                 .email(kakaoProfile.getKakaoAccount().getEmail())
                 .password("1234")
                 .build();
 
-        System.out.println("newUser 생성 전: " + newUser);
 
         UserEntity savedUser = userRepository.save(newUser);
-
-        System.out.println("저장된 newUser: " + savedUser);
-
         return savedUser;
     }
 
+    @Transactional(readOnly = true)
     public UserResponse findUser(String loginEmail){
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
@@ -92,6 +81,7 @@ public class UserService {
     }
 
     // 회원가입
+    @Transactional
     public UserSignUpResponse signUp(UserSignUpRequest request, String imageUrl) {
         // 닉네임 중복 확인
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -138,43 +128,22 @@ public class UserService {
     }
 
     // 사용자 로그인
-    public UserLoginResponse login(UserLoginRequest request) {
-        UserEntity user = userRepository.findByEmail(request.getEmail())
+    @Transactional(readOnly = true)
+    public void login(UserLoginRequest loginRequest, HttpServletResponse httpServletResponse) {
+        UserEntity user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
 
-        if (!user.getPassword().equals(request.getPassword())) {
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다.");
-        }
+        UUID userId = userRepository.findUserIdByEmail(loginRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException());
+        System.out.println("userId = " + userId);
+        String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
 
-        return UserLoginResponse.builder()
-                .userId(user.getUserId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .telephone(user.getTelephone())
-                .userImage(user.getUserImage())
-                .build();
-    }
-
-
-    // 사용자 정보 조회
-    public UserSignUpResponse getUserById(UUID userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        return UserSignUpResponse.builder()
-                .userId(user.getUserId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .telephone(user.getTelephone())
-                .userAge(user.getUserAge())
-                .userImage(user.getUserImage())
-                .gender(user.getGender())
-                .birthDate(user.getBirthDate())
-                .build();
+        httpServletResponse.setHeader("Authorization", "Bearer " + token);
     }
 
     // 사용자 정보 수정
-    public UserUpdateResponse updateUser(UUID userId, UserUpdateRequest request) {
-        UserEntity user = userRepository.findById(userId)
+    @Transactional
+    public UserUpdateResponse updateUser(String loginEmail, UserUpdateRequest request) {
+        UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         user.update(request.getUsername(), request.getEmail(), request.getTelephone(),
@@ -190,9 +159,9 @@ public class UserService {
                 .build();
     }
 
-    // 사용자 삭제
-    public UserDeleteResponse deleteUser(UUID userId) {
-        UserEntity user = userRepository.findById(userId)
+    @Transactional
+    public UserDeleteResponse deleteUser(String loginEmail) {
+        UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         userRepository.delete(user);
         // s3에서 이미지 삭제
