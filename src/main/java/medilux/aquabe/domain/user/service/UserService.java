@@ -40,7 +40,7 @@ public class UserService {
 
     //카카오 회원가입 & 로그인
     @Transactional
-    public UserEntity oAuthLogin(String accessCode, HttpServletResponse httpServletResponse) {
+    public void oAuthLogin(String accessCode, HttpServletResponse httpServletResponse){
         KakaoResponse.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         System.out.println("oAuthToken 출력 = " + oAuthToken);
         KakaoResponse.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
@@ -51,18 +51,12 @@ public class UserService {
                 .orElseGet(() -> createNewUser(kakaoProfile));
         System.out.println("user = " + user);
 
-//        UserEntity tempUser = userRepository.findByEmail(email)
-//        System.out.println("user = " + user);
 
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
         System.out.println("token = " + token);
         httpServletResponse.setHeader("Authorization", "Bearer " + token);
 
         System.out.println("token = " + token);
-        System.out.println("나도 된거 아닌가?");
-
-        //그럼 여기선 그냥 토큰 발급을 하면 될거고
-        return user;
     }
 
 
@@ -83,6 +77,18 @@ public class UserService {
         System.out.println("저장된 newUser: " + savedUser);
 
         return savedUser;
+    }
+
+    public UserResponse findUser(String loginEmail){
+        UserEntity user = userRepository.findByEmail(loginEmail)
+                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
+
+        return UserResponse.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .userImage(user.getUserImage())
+                .username(user.getUsername()).build();
+
     }
 
     // 회원가입
