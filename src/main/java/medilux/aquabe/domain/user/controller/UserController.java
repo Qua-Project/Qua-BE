@@ -91,33 +91,36 @@ public class UserController {
 //        }
 //    }
 
-    // 로그인
     @PostMapping("/login")
-    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest request) {
-        UserLoginResponse response = userService.login(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Void> login(@RequestBody UserLoginRequest request, HttpServletResponse httpServletResponse) {
+        userService.login(request, httpServletResponse);
+        return ResponseEntity.ok().build();
     }
 
     // 사용자 정보 조회
-    @GetMapping("/{user_id}")
-    public ResponseEntity<UserSignUpResponse> getUser(@PathVariable("user_id") UUID userId) {
-        UserSignUpResponse response = userService.getUserById(userId);
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping("/{user_id}")
+//    public ResponseEntity<UserSignUpResponse> getUser(@PathVariable("user_id") UUID userId) {
+//        UserSignUpResponse response = userService.getUserById(userId);
+//        return ResponseEntity.ok(response);
+//    }
 
     // 사용자 정보 수정
-    @PutMapping("/{user_id}")
+    @PutMapping("/me")
     public ResponseEntity<UserUpdateResponse> updateUser(
-            @PathVariable("user_id") UUID userId,
             @RequestBody UserUpdateRequest request) {
-        UserUpdateResponse response = userService.updateUser(userId, request);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+        UserUpdateResponse response = userService.updateUser(loginEmail, request);
         return ResponseEntity.ok(response);
     }
 
+
     // 사용자 삭제
-    @DeleteMapping("/{user_id}")
-    public ResponseEntity<UserDeleteResponse> deleteUser(@PathVariable("user_id") UUID userId) {
-        UserDeleteResponse response = userService.deleteUser(userId);
+    @DeleteMapping("/me")
+    public ResponseEntity<UserDeleteResponse> deleteUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+        UserDeleteResponse response = userService.deleteUser(loginEmail);
         return ResponseEntity.ok(response);
     }
 }

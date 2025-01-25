@@ -6,12 +6,14 @@ import medilux.aquabe.domain.type.dto.SkinTypeResponse;
 import medilux.aquabe.domain.type.dto.SkinTypeUsersResponse;
 import medilux.aquabe.domain.type.service.SkinTypeService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/user/{user_id}/skin")
+@RequestMapping("/api/user/type")
 @RequiredArgsConstructor
 public class SkinTypeController {
 
@@ -19,26 +21,30 @@ public class SkinTypeController {
 
     // 피부 타입 조회
     @GetMapping
-    public ResponseEntity<SkinTypeResponse> getSkinType(@PathVariable("user_id") UUID userId) {
-        SkinTypeResponse response = skinTypeService.getSkinType(userId);
+    public ResponseEntity<SkinTypeResponse> getSkinType() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+        SkinTypeResponse response = skinTypeService.getSkinType(loginEmail);
         return ResponseEntity.ok(response);
     }
 
     // 피부 타입 등록
     @PostMapping
     public ResponseEntity<Void> createSkinType(
-            @PathVariable("user_id") UUID userId,
             @RequestBody SkinTypeRequest request) {
-        skinTypeService.createSkinType(userId, request);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+        skinTypeService.createSkinType(loginEmail, request);
         return ResponseEntity.ok().build();
     }
 
     // 피부 타입 수정
     @PutMapping
     public ResponseEntity<Void> updateSkinType(
-            @PathVariable("user_id") UUID userId,
             @RequestBody SkinTypeRequest request) {
-        skinTypeService.updateSkinType(userId, request);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+        skinTypeService.updateSkinType(loginEmail, request);
         return ResponseEntity.ok().build();
     }
 //
