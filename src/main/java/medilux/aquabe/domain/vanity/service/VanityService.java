@@ -2,6 +2,7 @@ package medilux.aquabe.domain.vanity.service;
 
 
 import lombok.RequiredArgsConstructor;
+import medilux.aquabe.common.error.exceptions.BadRequestException;
 import medilux.aquabe.domain.product.entity.ProductEntity;
 import medilux.aquabe.domain.product.entity.ProductUsedFrequencyEntity;
 import medilux.aquabe.domain.product.repository.ProductRepository;
@@ -21,6 +22,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static medilux.aquabe.common.error.ErrorCode.*;
+
 @Service
 @RequiredArgsConstructor
 public class VanityService {
@@ -35,14 +38,14 @@ public class VanityService {
     // 모든 화장대 제품 조회
     @Transactional(readOnly = true)
     public List<VanityProductsEntity> getAllVanityProducts(String loginEmail) {
-        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
         return vanityProductsRepository.findByUserId(userId);
     }
 
     // 카테고리별 제품 조회
     @Transactional(readOnly = true)
     public List<VanityProductsEntity> getProductsByCategory(String loginEmail, Integer categoryId) {
-        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
         return vanityProductsRepository.findByUserIdAndProductCategoryCategoryId(userId, categoryId);
     }
 
@@ -59,7 +62,7 @@ public class VanityService {
         for (AddProductRequest request : requests) {
             // 제품 존재 여부 확인
             ProductEntity product = productRepository.findById(request.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 제품입니다."));
+                    .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 제품입니다."));
 
             // 화장대에 제품 추가
             VanityProductsEntity vanityProduct = VanityProductsEntity.builder()
@@ -113,10 +116,10 @@ public class VanityService {
     // 화장대에서 제품 삭제
     @Transactional
     public void removeProduct(String loginEmail, UUID productId) {
-        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
         VanityProductsEntity vanityProduct = vanityProductsRepository.findByUserIdAndProductProductId(userId, productId)
-                .orElseThrow(() -> new IllegalArgumentException("화장대에서 해당 제품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "화장대에서 해당 제품을 찾을 수 없습니다."));
 
         vanityProductsRepository.delete(vanityProduct);
         updateVanityScore(userId, -vanityProduct.getCompatibilityScore());
@@ -125,7 +128,7 @@ public class VanityService {
     // 화장대 점수 조회
     @Transactional(readOnly = true)
     public int getVanityScore(String loginEmail) {
-        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
         return userVanityRepository.findByUserId(userId)
                 .map(UserVanityEntity::getVanityScore)
                 .orElse(0);
