@@ -8,17 +8,18 @@ import medilux.aquabe.auth.KakaoUtil;
 import medilux.aquabe.domain.user.dto.*;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.repository.UserRepository;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import medilux.aquabe.common.error.exceptions.BadRequestException;
+import static medilux.aquabe.common.error.ErrorCode.*;
+
+
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.web.multipart.MultipartFile;
+
 
 
 @Service
@@ -70,7 +71,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse findUser(String loginEmail){
         UserEntity user = userRepository.findByEmail(loginEmail)
-                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
         return UserResponse.builder()
                 .userId(user.getUserId())
@@ -131,10 +132,8 @@ public class UserService {
     @Transactional(readOnly = true)
     public void login(UserLoginRequest loginRequest, HttpServletResponse httpServletResponse) {
         UserEntity user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다."));
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
-        UUID userId = userRepository.findUserIdByEmail(loginRequest.getEmail()).orElseThrow(() -> new IllegalArgumentException());
-        System.out.println("userId = " + userId);
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
 
         httpServletResponse.setHeader("Authorization", "Bearer " + token);
@@ -144,7 +143,7 @@ public class UserService {
     @Transactional
     public UserUpdateResponse updateUser(String loginEmail, UserUpdateRequest request) {
         UserEntity user = userRepository.findByEmail(loginEmail)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
         user.update(request.getUsername(), request.getEmail(), request.getTelephone(),
                 request.getUserImage(), request.getUserAge());
@@ -162,7 +161,7 @@ public class UserService {
     @Transactional
     public UserDeleteResponse deleteUser(String loginEmail) {
         UserEntity user = userRepository.findByEmail(loginEmail)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
         userRepository.delete(user);
         // s3에서 이미지 삭제
         s3ImageService.deleteImageFromS3(user.getUserImage());
@@ -173,12 +172,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserEntity getLoginUserByEmail(String loginId) {
-        if(loginId == null){
-            new BadRequestException("로그인 후 사용가능합니다.");
+    public UserEntity getLoginUserByEmail(String loginEmail) {
+        if(loginEmail == null){
+            new BadRequestException(INVALID_PARAMETER, "로그인이 필요한 서비스입니다.");
         }
-        UserEntity user = userRepository.findByEmail(loginId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        UserEntity user = userRepository.findByEmail(loginEmail)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
         return user;
     }
 }
