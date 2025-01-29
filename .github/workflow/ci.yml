@@ -1,0 +1,44 @@
+name: CI Pipeline for Spring Boot
+
+on:
+  push:
+    branches:
+      - feat/cicd  # feat/cicd 브랜치에 push될 때 실행
+  pull_request:
+    branches:
+      - feat/cicd  # feat/cicd 브랜치에 PR이 생성될 때 실행
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-22.04  # Ubuntu 22.04 환경 설정
+
+    steps:
+      # 🟢 1. 저장소 코드 다운로드
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 🟢 2. Java 17 환경 설정
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 🟢 3. Gradle 빌드 (Maven 사용 시 변경 가능)
+      - name: Grant execute permission for Gradle
+        run: chmod +x gradlew
+
+      - name: Build Project
+        run: ./gradlew clean build -x test  # 테스트 제외하고 빌드 (테스트는 다음 단계에서 수행)
+
+      # 🟢 4. 테스트 실행 (JUnit, Spock 등)
+      - name: Run Tests
+        run: ./gradlew test
+
+      # 🟢 5. 빌드 결과 저장 (선택사항)
+      - name: Save Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: springboot-app
+          path: build/libs/*.jar  # 빌드된 JAR 파일 저장
