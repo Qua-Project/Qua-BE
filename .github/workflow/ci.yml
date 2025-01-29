@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - feat/cicd  # feat/cicd 브랜치에 push될 때 실행
+      - main
   pull_request:
     branches:
       - feat/cicd  # feat/cicd 브랜치에 PR이 생성될 때 실행
+      - main
 
 jobs:
   build:
