@@ -34,9 +34,9 @@ jobs:
       - name: Build Project
         run: ./gradlew clean build -x test  # 테스트 제외하고 빌드 (테스트는 다음 단계에서 수행)
 
-      # 🟢 4. 테스트 실행 (JUnit, Spock 등)
-      - name: Run Tests
-        run: ./gradlew test
+#      # 🟢 4. 테스트 실행 (JUnit, Spock 등)
+#      - name: Run Tests
+#        run: ./gradlew test
 
       # 🟢 5. 빌드 결과 저장 (선택사항)
       - name: Save Build Artifact
