@@ -3,6 +3,7 @@ package medilux.aquabe.domain.user.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import medilux.aquabe.auth.AppleUtil;
 import medilux.aquabe.auth.JwtTokenUtil;
 import medilux.aquabe.auth.KakaoUtil;
 import medilux.aquabe.domain.user.dto.*;
@@ -32,6 +33,8 @@ public class UserService {
 
     private final KakaoUtil kakaoUtil;
 
+    private final AppleUtil appleUtil;
+
 
     @Value("${spring.jwt.secret}")
     private String secretKey;
@@ -41,13 +44,13 @@ public class UserService {
 
     //카카오 회원가입 & 로그인
     @Transactional
-    public void oAuthLogin(String accessCode, HttpServletResponse httpServletResponse){
+    public void oAuthKakaoLogin(String accessCode, HttpServletResponse httpServletResponse){
         KakaoResponse.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         KakaoResponse.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         String email = kakaoProfile.getKakaoAccount().getEmail();
 
         UserEntity user = userRepository.findByEmail(email)
-                .orElseGet(() -> createNewUser(kakaoProfile));
+                .orElseGet(() -> createNewKakaoUser(kakaoProfile));
 
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
 
@@ -56,7 +59,7 @@ public class UserService {
     }
 
 
-    private UserEntity createNewUser(KakaoResponse.KakaoProfile kakaoProfile) {
+    private UserEntity createNewKakaoUser(KakaoResponse.KakaoProfile kakaoProfile) {
         UserEntity newUser = UserEntity.builder()
                 .username(kakaoProfile.getKakaoAccount().getProfile().getNickname())
                 .email(kakaoProfile.getKakaoAccount().getEmail())
@@ -67,6 +70,39 @@ public class UserService {
         UserEntity savedUser = userRepository.save(newUser);
         return savedUser;
     }
+
+    // 애플 회원가입 & 로그인
+    @Transactional
+    public void oAuthAppleLogin(String authorizationCode, HttpServletResponse httpServletResponse) {
+        // 1. 애플 인증 서버에서 토큰 교환
+        AppleResponse.TokenResponse tokenResponse = appleUtil.exchangeCodeForToken(authorizationCode);
+
+        // 2. 애플 사용자 정보 확인
+        AppleResponse.AppleUser appleUser = appleUtil.getUserInfoFromToken(tokenResponse.getIdToken());
+        String email = appleUser.getEmail();
+
+        // 3. 사용자 정보로 회원가입 or 로그인 처리
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseGet(() -> createNewAppleUser(appleUser));
+
+        // 4. JWT 토큰 발급
+        String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
+        httpServletResponse.setHeader("Authorization", "Bearer " + token);
+    }
+
+    private UserEntity createNewAppleUser(AppleResponse.AppleUser appleUser) {
+        UserEntity newUser = UserEntity.builder()
+                .username(appleUser.getFullName())
+                .email(appleUser.getEmail())
+                .password("default_password") // 비밀번호는 적절히 처리 필요
+                .build();
+
+        return userRepository.save(newUser);
+    }
+
+
+
+
 
     @Transactional(readOnly = true)
     public UserResponse findUser(String loginEmail){
