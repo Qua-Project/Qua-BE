@@ -78,6 +78,17 @@ jobs:
           script: |
             echo "${{ secrets.APPLICATION_YML }}" > /home/ubuntu/application.yml
             chmod 600 /home/ubuntu/application.yml
+            
+      # ✅ application-aws.yml 업로드
+      - name: Upload application-aws.yml to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "${{ secrets.APPLICATION_AWS_YML }}" > /home/ubuntu/application-aws.yml
+            chmod 600 /home/ubuntu/application-aws.yml
 
       # ✅ EC2 서버에서 애플리케이션 실행
       - name: Deploy Application on EC2
