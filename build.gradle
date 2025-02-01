@@ -64,11 +64,6 @@ jar {
 	enabled = false
 }
 
-bootJar {
-	archiveFileName = 'Aqua-BE-0.0.1-SNAPSHOT.jar'
-	destinationDirectory = file("${project.buildDir}/libs")  // ✅ 절대 경로로 변경
-}
-
 
 
 tasks.named('test') {
