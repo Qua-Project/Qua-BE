@@ -50,6 +50,10 @@ jobs:
         with:
           name: springboot-app
 
+      - name: Find JAR Files
+        run: find . -name "*.jar"
+
+
       - name: Check Current Directory
         run: |
           pwd
