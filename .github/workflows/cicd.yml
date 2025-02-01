@@ -29,8 +29,7 @@ jobs:
       - name: Build Project
         run: ./gradlew clean build -x test  # 테스트 제외하고 빌드
 
-      - name: Check Build Output
-        run: ls -alh build/libs/
+
 
       # 4️⃣ 빌드 결과 저장
       - name: Save Build Artifact
@@ -54,8 +53,8 @@ jobs:
       - name: Check Current Directory
         run: |
           pwd
-          ls -alh
           ls -alh build/libs/
+          find . -name "*.jar"
 
 
       # 2️⃣ EC2에 JAR 파일 업로드
