@@ -29,6 +29,9 @@ jobs:
       - name: Build Project
         run: ./gradlew clean build -x test  # 테스트 제외하고 빌드
 
+      - name: Check Build Output
+        run: ls -alh build/libs/
+
       # 4️⃣ 빌드 결과 저장
       - name: Save Build Artifact
         uses: actions/upload-artifact@v4
@@ -57,6 +60,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "build/libs/*.jar"
           target: "/home/ubuntu"   # JAR 파일을 /home/ubuntu 폴더로 업로드
+          debug: true
 
       # 3️⃣ EC2 서버에서 애플리케이션 실행
       - name: Deploy Application on EC2
