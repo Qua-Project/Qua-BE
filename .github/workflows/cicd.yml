@@ -62,6 +62,13 @@ jobs:
           target: "/home/ubuntu"   # JAR 파일을 /home/ubuntu 폴더로 업로드
           debug: true
 
+      - name: Check Current Directory
+        run: |
+          pwd
+          ls -alh
+          ls -alh build/libs/
+
+
       # 3️⃣ EC2 서버에서 애플리케이션 실행
       - name: Deploy Application on EC2
         uses: appleboy/ssh-action@master
