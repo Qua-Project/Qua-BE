@@ -26,6 +26,10 @@ jobs:
       - name: Grant execute permission for Gradle
         run: chmod +x gradlew
 
+    # ✅ 캐시 클리어 추가
+      - name: Clear Gradle Cache
+        run: ./gradlew clean --no-build-cache
+
       - name: Build Project
         run: ./gradlew clean bootJar -x test  # 테스트 제외하고 빌드
 
