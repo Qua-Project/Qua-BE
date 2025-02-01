@@ -79,12 +79,16 @@ jobs:
             echo "🔴 기존 애플리케이션 종료"
             sudo pkill -f 'java -jar' || true
             sleep 5
-            
+
             echo "🗑️ 기존 JAR 파일 삭제"
-            rm -f /home/ubuntu/*.jar
-            
+            sudo rm -f /home/ubuntu/*.jar || true
+
             echo "🚀 새로운 애플리케이션 실행"
             nohup java -jar /home/ubuntu/*.jar > /home/ubuntu/nohup.out 2>&1 &
-            
+
             echo "📄 애플리케이션 로그 확인"
-            tail -n 50 /home/ubuntu/nohup.out
+            tail -n 50 /home/ubuntu/nohup.out || true
+
+            echo "✅ 애플리케이션 상태 확인"
+            pgrep -f 'java -jar' && echo "애플리케이션이 정상적으로 실행 중입니다." || echo "애플리케이션이 실행되지 않았습니다."
+      
