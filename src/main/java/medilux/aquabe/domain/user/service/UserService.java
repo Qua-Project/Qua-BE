@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.auth.JwtTokenUtil;
 import medilux.aquabe.auth.KakaoUtil;
+import medilux.aquabe.domain.type.repository.SkinTypeRepository;
 import medilux.aquabe.domain.user.dto.*;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.repository.UserRepository;
@@ -29,6 +30,8 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final S3ImageService s3ImageService;
+
+    private final SkinTypeRepository skinTypeRepository;
 
     private final KakaoUtil kakaoUtil;
 
@@ -162,14 +165,17 @@ public class UserService {
     public UserDeleteResponse deleteUser(String loginEmail) {
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+
         userRepository.delete(user);
-        // s3에서 이미지 삭제
+
         s3ImageService.deleteImageFromS3(user.getUserImage());
 
         return UserDeleteResponse.builder()
                 .message("사용자 삭제에 성공했습니다.")
                 .build();
     }
+
 
     @Transactional(readOnly = true)
     public UserEntity getLoginUserByEmail(String loginEmail) {

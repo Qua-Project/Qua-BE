@@ -45,19 +45,28 @@ public class SkinTypeService {
     // 피부 타입 등록
     @Transactional
     public void createSkinType(String loginEmail, SkinTypeRequest request) {
-        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
-        if (skinTypeRepository.findByUserId(userId).isPresent()) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+        if (skinTypeRepository.findByUser(user).isPresent()) {
             throw new BadRequestException(ROW_ALREADY_EXIST, "이미 등록된 피부 타입 정보가 존재합니다.");
         }
+
         SkinTypeEntity skinType = new SkinTypeEntity(
-                userId,
+                user,
                 request.getSkinType(),
                 request.getUbunScore(),
                 request.getSubunScore(),
                 request.getMingamScore()
         );
+
         skinTypeRepository.save(skinType);
     }
+
+
 
     // 피부 타입 수정
     @Transactional
