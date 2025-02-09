@@ -31,12 +31,6 @@ public class ProductScorePerTypeResponse {
                 .productImage(product.getProductImage())
                 .productPrice(product.getProductPrice())
                 .compatibilityScore(entity.getCompatibilityScore())
-                .boseup(entity.getBoseup())
-                .jinjung(entity.getJinjung())
-                .janghyeok(entity.getJanghyeok())
-                .ahaBha(entity.getAhabha())
-                .alcohol(entity.getAlcohol())
-                .hyangryo(entity.getHyangryo())
                 .build();
     }
 }

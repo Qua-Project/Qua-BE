@@ -24,39 +24,31 @@ public class ProductScorePerTypeEntity {
     private ProductEntity product; // 제품 ID (복합키-2)
 
     @Column(nullable = false)
+    private Integer categoryId; // 카테고리 ID 추가
+
+    @Column(nullable = false)
     private Integer compatibilityScore; // 궁합 점수
 
     @Column(nullable = false)
-    private Integer boseup; // 보습 점수
+    private Integer ranking; // 카테고리 내 랭킹
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Integer jinjung; // 진정 점수
-
-    @Column(nullable = false)
-    private Integer janghyeok; // 장벽 점수
-
-    @Column(nullable = false)
-    private Integer ahabha; // AHA/BHA 점수
-
-    @Column(nullable = false)
-    private Integer alcohol; // 알코올 점수
-
-    @Column(nullable = false)
-    private Integer hyangryo; // 향료 점수
+    private CompatibilityRatio compatibilityRatio; // 적합도 (Enum)
 
     @Builder
-    public ProductScorePerTypeEntity(String typeName, ProductEntity product, Integer compatibilityScore,
-                                     Integer boseup, Integer jinjung, Integer janghyeok,
-                                     Integer ahabha, Integer alcohol, Integer hyangryo) {
+    public ProductScorePerTypeEntity(String typeName, ProductEntity product,
+                                     Integer compatibilityScore, Integer ranking, CompatibilityRatio compatibilityRatio) {
         this.typeName = typeName;
         this.product = product;
         this.compatibilityScore = compatibilityScore;
-        this.boseup = boseup;
-        this.jinjung = jinjung;
-        this.janghyeok = janghyeok;
-        this.ahabha = ahabha;
-        this.alcohol = alcohol;
-        this.hyangryo = hyangryo;
+        this.ranking = ranking;
+        this.compatibilityRatio = compatibilityRatio;
+
+        // ProductEntity에서 category_id 가져오기
+        this.categoryId = (product != null && product.getCategory() != null)
+                ? product.getCategory().getCategoryId()
+                : null;
     }
 
     @Getter
