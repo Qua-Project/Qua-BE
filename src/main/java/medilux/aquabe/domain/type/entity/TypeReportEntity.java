@@ -1,9 +1,6 @@
 package medilux.aquabe.domain.type.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +10,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "TypeReport")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TypeReportEntity {
+
     @Id
-    private String TypeName;
+    @Column(name = "type_name")
+    private String typeName;
 
     private String keywords;
     private String explanation;
