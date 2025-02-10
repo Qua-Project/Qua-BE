@@ -30,8 +30,8 @@ public class TonerDetailsEntity {
 
     @Builder
     public TonerDetailsEntity(ProductEntity product, Integer boseupScore, Integer jinjungScore, Integer jangbyeokScore, Integer troubleScore, Integer gakjilScore) {
+
         this.product = product;
-        this.productId = product.getProductId();
         this.boseupScore = boseupScore;
         this.jinjungScore = jinjungScore;
         this.jangbyeokScore = jangbyeokScore;

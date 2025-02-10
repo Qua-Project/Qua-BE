@@ -30,7 +30,6 @@ public class LotionCreamDetailsEntity {
     @Builder
     public LotionCreamDetailsEntity(ProductEntity product, Integer boseupScore, Integer jinjungScore, Integer jangbyeokScore, Integer yubunScore, Integer jageukScore) {
         this.product = product;
-        this.productId = product.getProductId();
         this.boseupScore = boseupScore;
         this.jinjungScore = jinjungScore;
         this.jangbyeokScore = jangbyeokScore;

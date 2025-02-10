@@ -1,8 +1,7 @@
 package medilux.aquabe.domain.product.controller;
 
 import lombok.RequiredArgsConstructor;
-import medilux.aquabe.domain.product.dto.ProductDetailSearchResponse;
-import medilux.aquabe.domain.product.dto.ProductSearchResponse;
+import medilux.aquabe.domain.product.dto.*;
 import medilux.aquabe.domain.product.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,5 +35,22 @@ public class ProductController {
     public ResponseEntity<ProductDetailSearchResponse> getProductDetail(@PathVariable("product_id") UUID productId) {
         ProductDetailSearchResponse product = productService.getProductDetail(productId);
         return ResponseEntity.ok(product);
+    }
+
+    @PostMapping("/save/toner")
+    public ResponseEntity<String> saveTonerDetails(@RequestBody List<TonerDetailsRequest> requestList) {
+        productService.saveTonerDetails(requestList);
+        return ResponseEntity.ok("Toner details saved successfully");
+    }
+
+    @PostMapping("/save/serum")
+    public ResponseEntity<String> saveSerumDetails(@RequestBody List<SerumDetailsRequest> requestList) {
+        productService.saveSerumDetails(requestList);
+        return ResponseEntity.ok("Toner details saved successfully");
+    }
+    @PostMapping("/save/lotion-cream")
+    public ResponseEntity<String> saveLotionCreamDetails(@RequestBody List<LotionCreamDetailsRequest> requestList) {
+        productService.saveLotionCreamDetails(requestList);
+        return ResponseEntity.ok("Toner details saved successfully");
     }
 }

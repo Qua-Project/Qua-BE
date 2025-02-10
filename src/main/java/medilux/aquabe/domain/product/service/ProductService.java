@@ -1,12 +1,14 @@
 package medilux.aquabe.domain.product.service;
 
 import lombok.RequiredArgsConstructor;
-import medilux.aquabe.domain.product.dto.ProductDetailSearchResponse;
-import medilux.aquabe.domain.product.dto.ProductSearchResponse;
+import medilux.aquabe.domain.product.dto.*;
+import medilux.aquabe.domain.product.entity.LotionCreamDetailsEntity;
 import medilux.aquabe.domain.product.entity.ProductEntity;
-import medilux.aquabe.domain.product.repository.ProductRepository;
-import medilux.aquabe.domain.product.repository.ProductUsedFrequencyRepository;
+import medilux.aquabe.domain.product.entity.SerumDetailsEntity;
+import medilux.aquabe.domain.product.entity.TonerDetailsEntity;
+import medilux.aquabe.domain.product.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +20,9 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductUsedFrequencyRepository productUsedFrequencyRepository;
+    private final TonerDetailsRepository tonerDetailsRepository;
+    private final SerumDetailsRepository serumDetailsRepository;
+    private final LotionCreamDetailsRepository lotionCreamDetailsRepository;
 
     // 제품 검색 로직
     public List<ProductSearchResponse> searchProducts(String query, Integer category, String type) {
@@ -63,5 +68,74 @@ public class ProductService {
                 .brandName(product.getBrandName())
                 .categoryName(product.getCategory().getCategoryName())
                 .build();
+    }
+
+    @Transactional
+    public void saveTonerDetails(List<TonerDetailsRequest> requestList) {
+        List<TonerDetailsEntity> tonerDetailsEntities = requestList.stream()
+                .map(dto -> productRepository.findByProductName(dto.getProductName())
+                        .map(product -> {
+                            System.out.println("✅ Found productId: " + product.getProductId());
+
+                            return TonerDetailsEntity.builder()
+                                    .product(product)
+                                    .boseupScore(dto.getBoseupScore())
+                                    .jinjungScore(dto.getJinjungScore())
+                                    .jangbyeokScore(dto.getJangbyeokScore())
+                                    .troubleScore(dto.getTroubleScore())
+                                    .gakjilScore(dto.getGakjilScore())
+                                    .build();
+                        })
+                        .orElse(null)) // product를 찾지 못하면 null 반환
+                .filter(entity -> entity != null) // null 값을 제거하여 스킵
+                .collect(Collectors.toList());
+
+        tonerDetailsRepository.saveAll(tonerDetailsEntities);
+    }
+
+    @Transactional
+    public void saveSerumDetails(List<SerumDetailsRequest> requestList) {
+        List<SerumDetailsEntity> serumDetailsEntities = requestList.stream()
+                .map(dto -> productRepository.findByProductName(dto.getProductName())
+                        .map(product -> {
+                            System.out.println("✅ Found productId: " + product.getProductId());
+                            return SerumDetailsEntity.builder()
+                                    .product(product)
+                                    .jureumScore(dto.getJureumScore())
+                                    .mibaekScore(dto.getMibaekScore())
+                                    .mogongScore(dto.getMogongScore())
+                                    .troubleScore(dto.getTroubleScore())
+                                    .pijiScore(dto.getPijiScore())
+                                    .hongjoScore(dto.getHongjoScore())
+                                    .gakjilScore(dto.getGakjilScore())
+                                    .build();
+                        })
+                        .orElse(null)) // product를 찾지 못하면 null 반환
+                .filter(entity -> entity != null) // null 값을 제거하여 스킵
+                .collect(Collectors.toList());
+
+        serumDetailsRepository.saveAll(serumDetailsEntities);
+    }
+
+    @Transactional
+    public void saveLotionCreamDetails(List<LotionCreamDetailsRequest> requestList) {
+        List<LotionCreamDetailsEntity> lotionCreamDetailsEntities = requestList.stream()
+                .map(dto -> productRepository.findByProductName(dto.getProductName())
+                        .map(product -> {
+                            System.out.println("✅ Found productId: " + product.getProductId());
+                            return LotionCreamDetailsEntity.builder()
+                                    .product(product)
+                                    .boseupScore(dto.getBoseupScore())
+                                    .jinjungScore(dto.getJinjungScore())
+                                    .jangbyeokScore(dto.getJangbyeokScore())
+                                    .yubunScore(dto.getYubunScore())
+                                    .jageukScore(dto.getJageukScore())
+                                    .build();
+                        })
+                        .orElse(null)) // product를 찾지 못하면 null 반환
+                .filter(entity -> entity != null) // null 값을 제거하여 스킵
+                .collect(Collectors.toList());
+
+        lotionCreamDetailsRepository.saveAll(lotionCreamDetailsEntities);
     }
 }

@@ -32,7 +32,6 @@ public class SerumDetailsEntity {
     @Builder
     public SerumDetailsEntity(ProductEntity product, Integer jureumScore, Integer mibaekScore, Integer mogongScore, Integer troubleScore, Integer pijiScore, Integer hongjoScore, Integer gakjilScore) {
         this.product = product;
-        this.productId = product.getProductId();
         this.jureumScore = jureumScore;
         this.mibaekScore = mibaekScore;
         this.mogongScore = mogongScore;
