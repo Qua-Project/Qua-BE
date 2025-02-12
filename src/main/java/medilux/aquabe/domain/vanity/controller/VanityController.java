@@ -2,6 +2,7 @@ package medilux.aquabe.domain.vanity.controller;
 
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.domain.vanity.dto.AddProductRequest;
+import medilux.aquabe.domain.vanity.dto.VanityResponse;
 import medilux.aquabe.domain.vanity.entity.VanityProductsEntity;
 import medilux.aquabe.domain.vanity.service.VanityService;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +21,11 @@ public class VanityController {
     private final VanityService vanityService;
 
     @GetMapping
-    public ResponseEntity<List<VanityProductsEntity>> getAllVanityProducts() {
+    public ResponseEntity<VanityResponse> getMyVanity() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
-        List<VanityProductsEntity> products = vanityService.getAllVanityProducts(loginEmail);
-        return ResponseEntity.ok(products);
+        VanityResponse response = vanityService.getMyVanity(loginEmail);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/categories/{category_id}")

@@ -1,6 +1,5 @@
 package medilux.aquabe.domain.vanity.service;
 
-
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.common.error.exceptions.BadRequestException;
 import medilux.aquabe.domain.product.entity.ProductEntity;
@@ -10,6 +9,8 @@ import medilux.aquabe.domain.product.repository.ProductUsedFrequencyRepository;
 import medilux.aquabe.domain.type.service.SkinTypeService;
 import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.dto.AddProductRequest;
+import medilux.aquabe.domain.vanity.dto.VanityProductResponse;
+import medilux.aquabe.domain.vanity.dto.VanityResponse;
 import medilux.aquabe.domain.vanity.entity.UserVanityEntity;
 import medilux.aquabe.domain.vanity.entity.VanityProductsEntity;
 import medilux.aquabe.domain.vanity.repository.UserVanityRepository;
@@ -37,9 +38,14 @@ public class VanityService {
 
     // 모든 화장대 제품 조회
     @Transactional(readOnly = true)
-    public List<VanityProductsEntity> getAllVanityProducts(String loginEmail) {
-        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
-        return vanityProductsRepository.findByUserId(userId);
+    public VanityResponse getMyVanity(String loginEmail) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+        Integer vanityScore = userVanityRepository.findVanityScoreByUserId(userId);
+        List<VanityProductResponse> products = vanityProductsRepository.findUserVanityProducts(userId);
+
+        return new VanityResponse(userId, vanityScore, products);
     }
 
     // 카테고리별 제품 조회
