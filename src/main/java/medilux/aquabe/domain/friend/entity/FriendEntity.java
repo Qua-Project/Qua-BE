@@ -1,16 +1,14 @@
 package medilux.aquabe.domain.friend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
+import medilux.aquabe.domain.user.entity.UserEntity;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
-
-import static org.hibernate.annotations.UuidGenerator.Style.RANDOM;
 
 @Entity
 @Getter
@@ -19,15 +17,21 @@ import static org.hibernate.annotations.UuidGenerator.Style.RANDOM;
 public class FriendEntity {
 
     @Id
-    @UuidGenerator(style = RANDOM)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID friendId;
 
-    private UUID userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)  // User 삭제 시 해당 Friend 관계 삭제
+    private UserEntity user;
 
-    private UUID friendUserId;
+    @ManyToOne
+    @JoinColumn(name = "friend_user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)  // 친구가 삭제되면 해당 Friend 관계도 삭제
+    private UserEntity friendUser;
 
-    public FriendEntity(UUID userId, UUID friendUserId) {
-        this.userId = userId;
-        this.friendUserId = friendUserId;
+    public FriendEntity(UserEntity user, UserEntity friendUser) {
+        this.user = user;
+        this.friendUser = friendUser;
     }
 }
