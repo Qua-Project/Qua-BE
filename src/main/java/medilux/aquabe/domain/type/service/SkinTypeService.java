@@ -45,19 +45,28 @@ public class SkinTypeService {
     // 피부 타입 등록
     @Transactional
     public void createSkinType(String loginEmail, SkinTypeRequest request) {
-        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
-        if (skinTypeRepository.findByUserId(userId).isPresent()) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+        if (skinTypeRepository.findByUser(user).isPresent()) {
             throw new BadRequestException(ROW_ALREADY_EXIST, "이미 등록된 피부 타입 정보가 존재합니다.");
         }
+
         SkinTypeEntity skinType = new SkinTypeEntity(
-                userId,
+                user,
                 request.getSkinType(),
                 request.getUbunScore(),
                 request.getSubunScore(),
                 request.getMingamScore()
         );
+
         skinTypeRepository.save(skinType);
     }
+
+
 
     // 피부 타입 수정
     @Transactional
@@ -75,42 +84,4 @@ public class SkinTypeService {
         );
     }
 
-
-    // 특정 피부 타입의 사용자 및 화장대 점수 조회
-    @Transactional(readOnly = true)
-    public SkinTypeUsersResponse getUsersBySkinType(String typeName) {
-        // 피부 타입에 해당하는 사용자 조회
-        List<SkinTypeEntity> skinTypeEntities = skinTypeUsersRepository.findBySkinType(typeName);
-
-        if (skinTypeEntities.isEmpty()) {
-            throw new BadRequestException(ROW_DOES_NOT_EXIST, "해당 피부 타입 정보가 존재하지 않습니다.");
-        }
-
-        // 사용자별 화장대 점수 및 피부 타입 데이터 변환
-        List<SkinTypeUsersResponse.UserVanityInfo> userVanityInfos = skinTypeEntities.stream()
-                .map(skinType -> {
-                    // 사용자 정보 조회
-                    UserEntity user = userRepository.findById(skinType.getUserId())
-                            .orElseThrow(()-> new BadRequestException(ROW_DOES_NOT_EXIST, "사용자가 존재하지 않습니다"));
-
-                    // 사용자 화장대 점수 조회
-                    UserVanityEntity vanity = userVanityRepository.findByUserId(user.getUserId())
-                            .orElse(new UserVanityEntity(user.getUserId(), 0));
-
-                    return SkinTypeUsersResponse.UserVanityInfo.builder()
-                            .userId(user.getUserId().toString())
-                            .username(user.getUsername())
-                            .vanityScore(vanity.getVanityScore())
-                            .ubunScore(skinType.getUbunScore())
-                            .subunScore(skinType.getSubunScore())
-                            .mingamScore(skinType.getMingamScore())
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        return SkinTypeUsersResponse.builder()
-                .typeName(typeName)
-                .users(userVanityInfos)
-                .build();
-    }
 }

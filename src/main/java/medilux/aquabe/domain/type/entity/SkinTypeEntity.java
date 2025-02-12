@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import medilux.aquabe.domain.user.entity.UserEntity;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
@@ -14,18 +17,22 @@ import java.util.UUID;
 public class SkinTypeEntity {
 
     @Id
-    private UUID userId; // 사용자 ID (Primary Key)
+    @Column(name = "user_id")
+    private UUID userId;
 
-    private String skinType; // 피부 타입
+    @OneToOne
+    @MapsId
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
-    private Integer ubunScore; // 유분 점수
+    private String skinType;
+    private Integer ubunScore;
+    private Integer subunScore;
+    private Integer mingamScore;
 
-    private Integer subunScore; // 수분 점수
-
-    private Integer mingamScore; // 민감도 점수
-
-    public SkinTypeEntity(UUID userId, String skinType, Integer ubunScore, Integer subunScore, Integer mingamScore) {
-        this.userId = userId;
+    public SkinTypeEntity(UserEntity user, String skinType, Integer ubunScore, Integer subunScore, Integer mingamScore) {
+        this.user = user;
         this.skinType = skinType;
         this.ubunScore = ubunScore;
         this.subunScore = subunScore;
