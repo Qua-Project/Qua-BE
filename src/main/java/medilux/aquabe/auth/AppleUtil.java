@@ -37,14 +37,15 @@ public class AppleUtil {
     @Value("${spring.apple.key-id}")
     private String keyId;
 
-    @Value("${spring.apple.private-key-path}")
-    private String privateKeyPath;  // Apple Developer에서 제공한 .p8 키 내용
+    @Value("${spring.apple.private-key-path:#{null}}")
+    private String privateKeyPath;
 
     @Value("${spring.apple.token-url}")
     private String tokenUrl;
 
     // 애플 인증 서버로부터 토큰 교환
     public AppleResponse.TokenResponse exchangeCodeForToken(String authorizationCode) {
+        System.out.println("authorizationCode = " + authorizationCode);
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -55,9 +56,12 @@ public class AppleUtil {
         params.add("code", authorizationCode);
         params.add("grant_type", "authorization_code");
 
+        System.out.println("params = " + params);
+
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         ResponseEntity<AppleResponse.TokenResponse> response = restTemplate.postForEntity(tokenUrl, request, AppleResponse.TokenResponse.class);
+        System.out.println("애플한테서 받은 response = " + response);
         return response.getBody();
     }
 
@@ -69,8 +73,12 @@ public class AppleUtil {
                 .parseClaimsJws(idToken)
                 .getBody();
 
+        System.out.println("claims = " + claims);
         String email = claims.get("email", String.class);
         String fullName = claims.get("name", String.class);
+
+        System.out.println("email = " + email);
+        System.out.println("fullName = " + fullName);
 
         return new AppleResponse.AppleUser(email, fullName);
     }
@@ -102,8 +110,14 @@ public class AppleUtil {
     // .p8 파일에서 Private Key 읽기
     private PrivateKey getPrivateKey() {
         try {
-            String key = new String(Files.readAllBytes(Paths.get(privateKeyPath)))
-                    .replace("-----BEGIN PRIVATE KEY-----", "")
+            String key;
+            if(System.getenv("APPLE_PRIVATE_KEY") != null){
+                key = System.getenv("APPLE_PRIVATE_KEY");
+            }
+            else{
+                key = new String(Files.readAllBytes(Paths.get(privateKeyPath)));
+            }
+            key = key.replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
                     .replaceAll("\\s", "");
             byte[] keyBytes = Base64.getDecoder().decode(key);

@@ -80,9 +80,12 @@ public class UserService {
         // 1. 애플 인증 서버에서 토큰 교환
         AppleResponse.TokenResponse tokenResponse = appleUtil.exchangeCodeForToken(authorizationCode);
 
+        System.out.println("tokenResponse = " + tokenResponse);
         // 2. 애플 사용자 정보 확인
         AppleResponse.AppleUser appleUser = appleUtil.getUserInfoFromToken(tokenResponse.getIdToken());
         String email = appleUser.getEmail();
+
+        System.out.println("appleUser = " + appleUser);
 
         // 3. 사용자 정보로 회원가입 or 로그인 처리
         UserEntity user = userRepository.findByEmail(email)
@@ -94,12 +97,14 @@ public class UserService {
     }
 
     private UserEntity createNewAppleUser(AppleResponse.AppleUser appleUser) {
+        
         UserEntity newUser = UserEntity.builder()
                 .username(appleUser.getFullName())
                 .email(appleUser.getEmail())
                 .password("default_password") // 비밀번호는 적절히 처리 필요
                 .build();
 
+        System.out.println("newUser = " + newUser);
         return userRepository.save(newUser);
     }
 
@@ -176,6 +181,7 @@ public class UserService {
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
 
         httpServletResponse.setHeader("Authorization", "Bearer " + token);
+
     }
 
     // 사용자 정보 수정
