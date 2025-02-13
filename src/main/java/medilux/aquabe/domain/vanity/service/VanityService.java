@@ -7,6 +7,7 @@ import medilux.aquabe.domain.product.entity.ProductUsedFrequencyEntity;
 import medilux.aquabe.domain.product.repository.ProductRepository;
 import medilux.aquabe.domain.product.repository.ProductUsedFrequencyRepository;
 import medilux.aquabe.domain.type.service.SkinTypeService;
+import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.dto.AddProductRequest;
 import medilux.aquabe.domain.vanity.dto.VanityProductResponse;
@@ -112,12 +113,20 @@ public class VanityService {
 
     // 점수 업데이트
     private void updateVanityScore(UUID userId, int scoreChange) {
-        UserVanityEntity userVanity = userVanityRepository.findByUserId(userId)
-                .orElse(UserVanityEntity.builder().userId(userId).vanityScore(0).build());
+        UserVanityEntity userVanity = userVanityRepository.findById(userId)
+                .orElseGet(() -> {
+                    UserEntity user = userRepository.findById(userId)
+                            .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+                    return UserVanityEntity.builder()
+                            .user(user)
+                            .build();
+                });
 
         userVanity.updateVanityScore(scoreChange);
         userVanityRepository.save(userVanity);
     }
+
 
     // 화장대에서 제품 삭제
     @Transactional
