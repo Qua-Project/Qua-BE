@@ -2,6 +2,9 @@ package medilux.aquabe.domain.vanity.service;
 
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.common.error.exceptions.BadRequestException;
+import medilux.aquabe.domain.compatibility.entity.CompatibilityRatio;
+import medilux.aquabe.domain.compatibility.entity.ProductScorePerTypeEntity;
+import medilux.aquabe.domain.compatibility.repository.ProductScorePerTypeRepository;
 import medilux.aquabe.domain.product.entity.ProductEntity;
 import medilux.aquabe.domain.product.entity.ProductUsedFrequencyEntity;
 import medilux.aquabe.domain.product.repository.ProductRepository;
@@ -36,6 +39,7 @@ public class VanityService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final ProductUsedFrequencyRepository productUsedFrequencyRepository;
+    private final ProductScorePerTypeRepository productScorePerTypeRepository;
 
     // 모든 화장대 제품 조회
     @Transactional(readOnly = true)
@@ -59,37 +63,50 @@ public class VanityService {
     // 화장대에 제품 추가
     @Transactional
     public List<VanityProductsEntity> addProducts(String loginEmail, List<AddProductRequest> requests) {
-        // SkinType 조회
-        UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new IllegalArgumentException());
+        // User ID 조회
+        UUID userId = userRepository.findUserIdByEmail(loginEmail)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+
         String skinType = skinTypeService.getSkinType(loginEmail).getSkinType();
 
         List<VanityProductsEntity> addedProducts = new ArrayList<>();
 
-        // 리스트에 모든 제품 저장
         for (AddProductRequest request : requests) {
             // 제품 존재 여부 확인
             ProductEntity product = productRepository.findById(request.getProductId())
                     .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 제품입니다."));
 
+            // `ProductScorePerTypeEntity`에서 해당 product_id에 대한 정보 가져오기
+            ProductScorePerTypeEntity productScore = productScorePerTypeRepository.findByProductAndTypeName(product, skinType)
+                    .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "해당 제품의 점수 데이터가 없습니다."));
+
+            Integer categoryId = productScore.getCategoryId();
+            Integer compatibilityScore = productScore.getCompatibilityScore(); // 제품 궁합 점수
+            CompatibilityRatio compatibilityRatio = productScore.getCompatibilityRatio(); // 적합도
+
             // 화장대에 제품 추가
             VanityProductsEntity vanityProduct = VanityProductsEntity.builder()
                     .userId(userId)
                     .product(product)
-                    .compatibilityScore(request.getCompatibilityScore())
+                    .categoryId(categoryId)
+                    .compatibilityScore(compatibilityScore) // 자동 설정된 점수
+                    .compatibilityRatio(compatibilityRatio) // 자동 설정된 적합도
                     .build();
+
             vanityProductsRepository.save(vanityProduct);
 
             // 제품 화장대 저장 횟수 업데이트
             updateProductFrequency(request.getProductId(), skinType);
 
             // 사용자 화장대 점수 업데이트
-            updateVanityScore(userId, request.getCompatibilityScore());
+            updateVanityScore(userId, compatibilityScore);
 
             addedProducts.add(vanityProduct);
         }
 
         return addedProducts;
     }
+
 
 
     // ProductUsedFrequency 테이블에 빈도 업데이트

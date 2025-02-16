@@ -36,19 +36,46 @@ public class ProductScorePerTypeEntity {
     @Column(nullable = false)
     private CompatibilityRatio compatibilityRatio; // 적합도 (Enum)
 
+    @Transient
+    private Integer totalProductsInType; // 같은 typeName을 가진 제품 개수 (DB에 저장X)
+
+
     @Builder
     public ProductScorePerTypeEntity(String typeName, ProductEntity product,
-                                     Integer compatibilityScore, Integer ranking, CompatibilityRatio compatibilityRatio) {
+                                     Integer compatibilityScore, Integer ranking,
+                                     Integer totalProductsInType) {
         this.typeName = typeName;
         this.product = product;
         this.compatibilityScore = compatibilityScore;
         this.ranking = ranking;
-        this.compatibilityRatio = compatibilityRatio;
+        this.totalProductsInType = totalProductsInType;
 
         // ProductEntity에서 category_id 가져오기
         this.categoryId = (product != null && product.getCategory() != null)
                 ? product.getCategory().getCategoryId()
                 : null;
+
+        this.compatibilityRatio = determineCompatibilityRatio();
+    }
+
+    private CompatibilityRatio determineCompatibilityRatio() {
+        if (totalProductsInType == null || totalProductsInType == 0) {
+            return CompatibilityRatio.NORMAL; // 기본값
+        }
+
+        double ratio = (double) ranking / totalProductsInType; // 랭킹 비율
+
+        if (ratio <= 0.1) {
+            return CompatibilityRatio.VERY_SUITABLE; // 상위 10% 이내
+        } else if (ratio <= 0.3) {
+            return CompatibilityRatio.SUITABLE; // 상위 10% ~ 30%
+        } else if (ratio <= 0.7) {
+            return CompatibilityRatio.NORMAL; // 상위 30% ~ 70%
+        } else if (ratio <= 0.9) {
+            return CompatibilityRatio.UNSUITABLE; // 상위 70% ~ 90%
+        } else {
+            return CompatibilityRatio.VERY_UNSUITABLE; // 상위 90% ~ 100%
+        }
     }
 
     @Getter

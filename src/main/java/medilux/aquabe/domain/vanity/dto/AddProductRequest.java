@@ -11,6 +11,4 @@ import java.util.UUID;
 @NoArgsConstructor
 public class AddProductRequest {
     private UUID productId;
-    private Integer compatibilityScore;
-//    private String skinType;
 }
