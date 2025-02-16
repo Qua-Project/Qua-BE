@@ -216,7 +216,7 @@ public class VanityService {
             updateProductFrequency(request.getProductId(), skinType);
 
             // 사용자 화장대 점수 업데이트
-            updateVanityScore(userId, compatibilityScore);
+            updateVanityScore(userId);
 
             addedProducts.add(vanityProduct);
         }
@@ -246,20 +246,33 @@ public class VanityService {
 
 
     // 점수 업데이트
-    private void updateVanityScore(UUID userId, int scoreChange) {
+    private void updateVanityScore(UUID userId) {
+        // 사용자의 모든 화장대 제품 조회
+        List<VanityProductsEntity> userProducts = vanityProductsRepository.findByUserId(userId);
+
+        // 평균 궁합 점수 계산 (없으면 0으로 설정)
+        double averageScore = userProducts.stream()
+                .mapToInt(VanityProductsEntity::getCompatibilityScore)
+                .average()
+                .orElse(0.0);
+
+        // `vanityScore`를 정수형으로 변환 후 업데이트
+        int updatedVanityScore = (int) Math.round(averageScore);
+
+        // `UserVanityEntity` 가져오거나 없으면 생성
         UserVanityEntity userVanity = userVanityRepository.findById(userId)
                 .orElseGet(() -> {
                     UserEntity user = userRepository.findById(userId)
                             .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
-
                     return UserVanityEntity.builder()
                             .user(user)
                             .build();
                 });
 
-        userVanity.updateVanityScore(scoreChange);
+        userVanity.updateVanityScore(updatedVanityScore);
         userVanityRepository.save(userVanity);
     }
+
 
 
     // 화장대에서 제품 삭제
@@ -271,7 +284,7 @@ public class VanityService {
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "화장대에서 해당 제품을 찾을 수 없습니다."));
 
         vanityProductsRepository.delete(vanityProduct);
-        updateVanityScore(userId, -vanityProduct.getCompatibilityScore());
+        updateVanityScore(userId);
     }
 
     // 화장대 점수 조회
