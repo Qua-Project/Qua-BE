@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import medilux.aquabe.common.error.exceptions.BadRequestException;
 import static medilux.aquabe.common.error.ErrorCode.*;
@@ -34,8 +33,6 @@ public class UserService {
     private final UserVanityRepository userVanityRepository;
 
     private final S3ImageService s3ImageService;
-
-    private final SkinTypeRepository skinTypeRepository;
 
     private final KakaoUtil kakaoUtil;
 
@@ -176,18 +173,15 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
-        user.update(request.getUsername(), request.getEmail(), request.getTelephone(),
-                request.getUserImage(), request.getUserAge());
+        user.update(request.getUsername(), request.getTelephone(), request.getUserImage(), request.getUserAge());
         userRepository.saveAndFlush(user);
 
         userVanityRepository.findById(user.getUserId()).orElseGet(() -> {
-
             UserVanityEntity vanity = UserVanityEntity.builder()
                     .user(user)
                     .build();
 
             userVanityRepository.save(vanity);
-
             return vanity;
         });
 
