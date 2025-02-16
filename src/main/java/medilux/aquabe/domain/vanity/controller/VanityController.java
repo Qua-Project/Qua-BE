@@ -1,11 +1,14 @@
 package medilux.aquabe.domain.vanity.controller;
 
 import lombok.RequiredArgsConstructor;
+import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.dto.AddProductRequest;
 import medilux.aquabe.domain.vanity.dto.VanityCategoryAverageResponse;
+import medilux.aquabe.domain.vanity.dto.VanityProductResponse;
 import medilux.aquabe.domain.vanity.dto.VanityResponse;
 import medilux.aquabe.domain.vanity.entity.VanityProductsEntity;
 import medilux.aquabe.domain.vanity.service.VanityService;
+import medilux.aquabe.common.error.exceptions.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,12 +17,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import static medilux.aquabe.common.error.ErrorCode.ROW_DOES_NOT_EXIST;
+
 @RestController
 @RequestMapping("/api/user/vanity")
 @RequiredArgsConstructor
 public class VanityController {
 
     private final VanityService vanityService;
+    private final UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity<VanityResponse> getMyVanity() {
@@ -30,24 +36,31 @@ public class VanityController {
     }
 
     @GetMapping("/categories/{category_id}")
-    public ResponseEntity<List<VanityProductsEntity>> getProductsByCategory(
-            @PathVariable("category_id") Integer categoryId) {
+    public ResponseEntity<List<VanityProductResponse>> getProductsByCategory(@PathVariable("category_id") Integer categoryId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
-        List<VanityProductsEntity> products = vanityService.getProductsByCategory(loginEmail, categoryId);
+
+        UUID userId = userRepository.findUserIdByEmail(loginEmail)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+        List<VanityProductResponse> products = vanityService.getProductsByCategory(userId, categoryId);
         return ResponseEntity.ok(products);
     }
 
+
+
     @GetMapping("/categories/{category_id}/average")
-    public ResponseEntity<VanityCategoryAverageResponse> getAverageByCategory(
-            @PathVariable("category_id") Integer categoryId) {
+    public ResponseEntity<VanityCategoryAverageResponse> getAverageByCategory(@PathVariable("category_id") Integer categoryId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
 
-        VanityCategoryAverageResponse response = vanityService.getAverageByCategory(loginEmail, categoryId);
+        UUID userId = userRepository.findUserIdByEmail(loginEmail)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
+        VanityCategoryAverageResponse response = vanityService.getAverageByCategory(userId, categoryId);
         return ResponseEntity.ok(response);
     }
+
 
 
     @PostMapping

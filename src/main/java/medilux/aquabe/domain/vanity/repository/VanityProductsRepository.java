@@ -19,9 +19,6 @@ public interface VanityProductsRepository extends JpaRepository<VanityProductsEn
 
     Optional<VanityProductsEntity> findByUserIdAndProductProductId(UUID userId, UUID productId);
 
-    @Query("SELECT new medilux.aquabe.domain.vanity.dto.VanityProductResponse(" +
-            "vp.product, vp.compatibilityScore) " +
-            "FROM VanityProductsEntity vp " +
-            "WHERE vp.userId = :userId")
-    List<VanityProductResponse> findUserVanityProducts(@Param("userId") UUID userId);
+    @Query("SELECT vp FROM VanityProductsEntity vp WHERE vp.userId = :userId")
+    List<VanityProductsEntity> findUserVanityProducts(@Param("userId") UUID userId);
 }
