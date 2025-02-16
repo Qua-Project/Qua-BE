@@ -64,47 +64,32 @@ public class UserService {
 
     private UserEntity createNewKakaoUser(KakaoResponse.KakaoProfile kakaoProfile) {
         UserEntity newUser = UserEntity.builder()
-                .username(kakaoProfile.getKakaoAccount().getProfile().getNickname())
                 .email(kakaoProfile.getKakaoAccount().getEmail())
-                .password("1234")
                 .build();
 
-
-        UserEntity savedUser = userRepository.save(newUser);
-        return savedUser;
+        return userRepository.save(newUser);
     }
 
-    // 애플 회원가입 & 로그인
     @Transactional
-    public void oAuthAppleLogin(String authorizationCode, HttpServletResponse httpServletResponse) {
-        // 1. 애플 인증 서버에서 토큰 교환
-        AppleResponse.TokenResponse tokenResponse = appleUtil.exchangeCodeForToken(authorizationCode);
+    public void oAuthAppleLogin(String identityToken, HttpServletResponse httpServletResponse) {
+        AppleResponse.AppleUser appleUser = appleUtil.getUserInfoFromToken(identityToken);
+        String sub = appleUser.getSub();
 
-        System.out.println("tokenResponse = " + tokenResponse);
-        // 2. 애플 사용자 정보 확인
-        AppleResponse.AppleUser appleUser = appleUtil.getUserInfoFromToken(tokenResponse.getIdToken());
-        String email = appleUser.getEmail();
-
-        System.out.println("appleUser = " + appleUser);
-
-        // 3. 사용자 정보로 회원가입 or 로그인 처리
-        UserEntity user = userRepository.findByEmail(email)
+        UserEntity user = userRepository.findByAppleSub(sub)
                 .orElseGet(() -> createNewAppleUser(appleUser));
 
-        // 4. JWT 토큰 발급
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
         httpServletResponse.setHeader("Authorization", "Bearer " + token);
     }
 
+
     private UserEntity createNewAppleUser(AppleResponse.AppleUser appleUser) {
-        
+
         UserEntity newUser = UserEntity.builder()
-                .username(appleUser.getFullName())
                 .email(appleUser.getEmail())
-                .password("default_password") // 비밀번호는 적절히 처리 필요
+                .appleSub(appleUser.getSub())
                 .build();
 
-        System.out.println("newUser = " + newUser);
         return userRepository.save(newUser);
     }
 
@@ -144,7 +129,6 @@ public class UserService {
         // 사용자 생성 및 저장
         UserEntity userEntity = UserEntity.builder()
                 .username(request.getUsername())
-                .password(request.getPassword())
                 .email(request.getEmail())
                 .telephone(request.getTelephone())
                 .userAge(request.getUserAge())
@@ -161,7 +145,6 @@ public class UserService {
                 .userId(userEntity.getUserId())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
-                .password(userEntity.getPassword()) // 실제 비밀번호 대신 암호화된 데이터 권장
                 .telephone(userEntity.getTelephone())
                 .userAge(userEntity.getUserAge())
                 .userImage(imageUrl)
@@ -190,8 +173,7 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
-        user.update(request.getUsername(), request.getEmail(), request.getTelephone(),
-                request.getUserImage(), request.getUserAge());
+        user.update(request.getUsername(), request.getEmail(), request.getTelephone(), request.getUserAge());
         userRepository.save(user);
 
         return UserUpdateResponse.builder()
