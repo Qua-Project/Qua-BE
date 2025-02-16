@@ -2,6 +2,7 @@ package medilux.aquabe.domain.vanity.controller;
 
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.domain.vanity.dto.AddProductRequest;
+import medilux.aquabe.domain.vanity.dto.VanityCategoryAverageResponse;
 import medilux.aquabe.domain.vanity.dto.VanityResponse;
 import medilux.aquabe.domain.vanity.entity.VanityProductsEntity;
 import medilux.aquabe.domain.vanity.service.VanityService;
@@ -36,6 +37,18 @@ public class VanityController {
         List<VanityProductsEntity> products = vanityService.getProductsByCategory(loginEmail, categoryId);
         return ResponseEntity.ok(products);
     }
+
+    @GetMapping("/categories/{category_id}/average")
+    public ResponseEntity<VanityCategoryAverageResponse> getAverageByCategory(
+            @PathVariable("category_id") Integer categoryId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+
+        VanityCategoryAverageResponse response = vanityService.getAverageByCategory(loginEmail, categoryId);
+
+        return ResponseEntity.ok(response);
+    }
+
 
     @PostMapping
     public ResponseEntity<List<VanityProductsEntity>> addProductsToVanity(

@@ -5,14 +5,13 @@ import medilux.aquabe.common.error.exceptions.BadRequestException;
 import medilux.aquabe.domain.compatibility.entity.CompatibilityRatio;
 import medilux.aquabe.domain.compatibility.entity.ProductScorePerTypeEntity;
 import medilux.aquabe.domain.compatibility.repository.ProductScorePerTypeRepository;
-import medilux.aquabe.domain.product.entity.ProductEntity;
-import medilux.aquabe.domain.product.entity.ProductUsedFrequencyEntity;
-import medilux.aquabe.domain.product.repository.ProductRepository;
-import medilux.aquabe.domain.product.repository.ProductUsedFrequencyRepository;
+import medilux.aquabe.domain.product.entity.*;
+import medilux.aquabe.domain.product.repository.*;
 import medilux.aquabe.domain.type.service.SkinTypeService;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.dto.AddProductRequest;
+import medilux.aquabe.domain.vanity.dto.VanityCategoryAverageResponse;
 import medilux.aquabe.domain.vanity.dto.VanityProductResponse;
 import medilux.aquabe.domain.vanity.dto.VanityResponse;
 import medilux.aquabe.domain.vanity.entity.UserVanityEntity;
@@ -40,6 +39,9 @@ public class VanityService {
     private final UserRepository userRepository;
     private final ProductUsedFrequencyRepository productUsedFrequencyRepository;
     private final ProductScorePerTypeRepository productScorePerTypeRepository;
+    private final TonerDetailsRepository tonerDetailsRepository;
+    private final SerumDetailsRepository serumDetailsRepository;
+    private final LotionCreamDetailsRepository lotionCreamDetailsRepository;
 
     // 모든 화장대 제품 조회
     @Transactional(readOnly = true)
@@ -59,6 +61,106 @@ public class VanityService {
         UUID userId = userRepository.findUserIdByEmail(loginEmail).orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
         return vanityProductsRepository.findByUserIdAndProductCategoryCategoryId(userId, categoryId);
     }
+
+    // 카테고리별 제품 점수 평균 조회
+    @Transactional(readOnly = true)
+    public VanityCategoryAverageResponse getAverageByCategory(String loginEmail, Integer categoryId) {
+        UUID userId = userRepository.findUserIdByEmail(loginEmail)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+
+        List<VanityProductsEntity> products = vanityProductsRepository.findByUserIdAndProductCategoryCategoryId(userId, categoryId);
+
+        // 제품이 없으면 예외
+        if (products.isEmpty()) {
+            throw new BadRequestException(ROW_DOES_NOT_EXIST, "해당 카테고리에 제품이 존재하지 않습니다.");
+        }
+
+        // 평균 궁합 점수 계산
+        int averageScore = (int) Math.round(products.stream()
+                .mapToInt(VanityProductsEntity::getCompatibilityScore)
+                .average()
+                .orElse(0.0));
+
+        // 평균 적합도 계산
+        CompatibilityRatio averageRatio = calculateAverageCompatibilityRatio(products);
+
+        // 추가 점수 초기화
+        Integer averageBoseupScore = null, averageJinjungScore = null, averageJangbyeokScore = null, averageTroubleScore = null, averageGakjilScore = null;
+        Integer averageJureumScore = null, averageMibaekScore = null, averageMogongScore = null, averageTroubleScoreSerum = null, averagePijiScore = null, averageHongjoScore = null, averageGakjilScoreSerum = null;
+        Integer averageBoseupScoreLotion = null, averageJinjungScoreLotion = null, averageJangbyeokScoreLotion = null, averageYubunScore = null, averageJageukScore = null;
+
+        List<UUID> productIds = products.stream().map(v -> v.getProduct().getProductId()).toList();
+
+        if (categoryId == 1) { // 토너 평균 점수 계산
+            List<TonerDetailsEntity> tonerDetails = tonerDetailsRepository.findByProduct_ProductIdIn(productIds);
+
+            averageBoseupScore = (int) Math.round(tonerDetails.stream().mapToInt(TonerDetailsEntity::getBoseupScore).average().orElse(0.0));
+            averageJinjungScore = (int) Math.round(tonerDetails.stream().mapToInt(TonerDetailsEntity::getJinjungScore).average().orElse(0.0));
+            averageJangbyeokScore = (int) Math.round(tonerDetails.stream().mapToInt(TonerDetailsEntity::getJangbyeokScore).average().orElse(0.0));
+            averageTroubleScore = (int) Math.round(tonerDetails.stream().mapToInt(TonerDetailsEntity::getTroubleScore).average().orElse(0.0));
+            averageGakjilScore = (int) Math.round(tonerDetails.stream().mapToInt(TonerDetailsEntity::getGakjilScore).average().orElse(0.0));
+        } else if (categoryId == 2) { // 세럼 평균 점수 계산
+            List<SerumDetailsEntity> serumDetails = serumDetailsRepository.findByProduct_ProductIdIn(productIds);
+
+            averageJureumScore = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getJureumScore).average().orElse(0.0));
+            averageMibaekScore = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getMibaekScore).average().orElse(0.0));
+            averageMogongScore = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getMogongScore).average().orElse(0.0));
+            averageTroubleScoreSerum = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getTroubleScore).average().orElse(0.0));
+            averagePijiScore = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getPijiScore).average().orElse(0.0));
+            averageHongjoScore = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getHongjoScore).average().orElse(0.0));
+            averageGakjilScoreSerum = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getGakjilScore).average().orElse(0.0));
+        } else if (categoryId == 3) { // 로션/크림 평균 점수 계산
+            List<LotionCreamDetailsEntity> lotionDetails = lotionCreamDetailsRepository.findByProduct_ProductIdIn(productIds);
+
+            averageBoseupScoreLotion = (int) Math.round(lotionDetails.stream().mapToInt(LotionCreamDetailsEntity::getBoseupScore).average().orElse(0.0));
+            averageJinjungScoreLotion = (int) Math.round(lotionDetails.stream().mapToInt(LotionCreamDetailsEntity::getJinjungScore).average().orElse(0.0));
+            averageJangbyeokScoreLotion = (int) Math.round(lotionDetails.stream().mapToInt(LotionCreamDetailsEntity::getJangbyeokScore).average().orElse(0.0));
+            averageYubunScore = (int) Math.round(lotionDetails.stream().mapToInt(LotionCreamDetailsEntity::getYubunScore).average().orElse(0.0));
+            averageJageukScore = (int) Math.round(lotionDetails.stream().mapToInt(LotionCreamDetailsEntity::getJageukScore).average().orElse(0.0));
+        }
+
+        return new VanityCategoryAverageResponse(averageScore, averageRatio,
+                averageBoseupScore, averageJinjungScore, averageJangbyeokScore, averageTroubleScore, averageGakjilScore,
+                averageJureumScore, averageMibaekScore, averageMogongScore, averageTroubleScoreSerum, averagePijiScore, averageHongjoScore, averageGakjilScoreSerum,
+                averageBoseupScoreLotion, averageJinjungScoreLotion, averageJangbyeokScoreLotion, averageYubunScore, averageJageukScore);
+    }
+
+
+
+    private CompatibilityRatio calculateAverageCompatibilityRatio(List<VanityProductsEntity> products) {
+        if (products.isEmpty()) return CompatibilityRatio.NORMAL; // 기본값
+
+        // CompatibilityRatio Enum을 점수로 변환
+        int totalScore = products.stream()
+                .mapToInt(product -> convertRatioToScore(product.getCompatibilityRatio()))
+                .sum();
+
+        int averageScore = totalScore / products.size();
+
+        // 평균 점수를 다시 CompatibilityRatio로 변환
+        return convertScoreToRatio(averageScore);
+    }
+
+    // CompatibilityRatio → 점수 변환
+    private int convertRatioToScore(CompatibilityRatio ratio) {
+        return switch (ratio) {
+            case VERY_SUITABLE -> 5;
+            case SUITABLE -> 4;
+            case NORMAL -> 3;
+            case UNSUITABLE -> 2;
+            case VERY_UNSUITABLE -> 1;
+        };
+    }
+
+    // 평균 점수 → CompatibilityRatio 변환
+    private CompatibilityRatio convertScoreToRatio(int score) {
+        if (score >= 5) return CompatibilityRatio.VERY_SUITABLE;
+        if (score >= 4) return CompatibilityRatio.SUITABLE;
+        if (score >= 3) return CompatibilityRatio.NORMAL;
+        if (score >= 2) return CompatibilityRatio.UNSUITABLE;
+        return CompatibilityRatio.VERY_UNSUITABLE;
+    }
+
 
     // 화장대에 제품 추가
     @Transactional
@@ -82,6 +184,7 @@ public class VanityService {
 
             Integer categoryId = productScore.getCategoryId();
             Integer compatibilityScore = productScore.getCompatibilityScore(); // 제품 궁합 점수
+            Integer ranking = productScore.getRanking(); // 랭킹
             CompatibilityRatio compatibilityRatio = productScore.getCompatibilityRatio(); // 적합도
 
             // 화장대에 제품 추가
@@ -90,6 +193,7 @@ public class VanityService {
                     .product(product)
                     .categoryId(categoryId)
                     .compatibilityScore(compatibilityScore) // 자동 설정된 점수
+                    .ranking(ranking)
                     .compatibilityRatio(compatibilityRatio) // 자동 설정된 적합도
                     .build();
 

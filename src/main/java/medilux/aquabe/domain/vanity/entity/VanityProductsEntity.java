@@ -33,16 +33,20 @@ public class VanityProductsEntity {
     @Column(nullable = false)
     private Integer compatibilityScore;
 
+    @Column(nullable = false)
+    private Integer ranking; // 카테고리 내 랭킹
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CompatibilityRatio compatibilityRatio; // ProductScorePerType에서 가져온 값 저장
 
     @Builder
-    public VanityProductsEntity(UUID userId, ProductEntity product, Integer categoryId ,Integer compatibilityScore, CompatibilityRatio compatibilityRatio) {
+    public VanityProductsEntity(UUID userId, ProductEntity product, Integer categoryId ,Integer compatibilityScore, Integer ranking, CompatibilityRatio compatibilityRatio) {
         this.userId = userId;
         this.product = product;
         this.categoryId = categoryId;
         this.compatibilityScore = compatibilityScore;
+        this.ranking = ranking;
         this.compatibilityRatio = compatibilityRatio;
     }
 
