@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import medilux.aquabe.domain.user.dto.*;
-import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.service.S3ImageService;
 import medilux.aquabe.domain.user.service.UserService;
 import org.springframework.http.MediaType;
@@ -18,7 +17,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.nio.charset.StandardCharsets;
 
 
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/user")
@@ -83,20 +81,6 @@ public class UserController {
             );
         }
     }
-//
-//    @PostMapping(value = "/upload-image", consumes = "multipart/form-data")
-//    public ResponseEntity<String> uploadImage(@RequestPart("image") MultipartFile image) {
-//        try {
-//            // S3ImageService를 이용해 이미지를 업로드하고 URL 반환
-//            String imageUrl = s3ImageService.upload(image);
-//            return ResponseEntity.ok(imageUrl);
-//        } catch (IllegalArgumentException e) {
-//            return ResponseEntity.badRequest().body("이미지 업로드 실패: " + e.getMessage());
-//        } catch (Exception e) {
-//            return ResponseEntity.status(500).body("서버 오류: " + e.getMessage());
-//        }
-//    }
-
     @PostMapping("/login")
     public ResponseEntity<Void> login(@RequestBody UserLoginRequest request, HttpServletResponse httpServletResponse) {
         userService.login(request, httpServletResponse);
@@ -120,6 +104,15 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping(value = "/me/updateImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> updateUserImage(
+            @RequestParam(name = "profileImage", required = false) MultipartFile profileImage
+    ){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+        userService.updateUserImage(loginEmail, profileImage);
+        return ResponseEntity.ok("profile image updated");
+    }
 
     // 사용자 삭제
     @DeleteMapping("/me")

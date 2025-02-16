@@ -63,12 +63,14 @@ public class UserEntity {
         this.appleSub = appleSub;
     }
 
-    public void update(String username, String telephone,
-                       String userImage, Integer userAge) {
+    public void update(String username, String telephone, Integer userAge) {
         this.username = username;
         this.telephone = telephone;
-        this.userImage = userImage;
         this.userAge = userAge;
+    }
+
+    public void updateUserImage(String userImage) {
+        this.userImage = userImage;
     }
 
 }

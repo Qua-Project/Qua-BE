@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import medilux.aquabe.auth.AppleUtil;
 import medilux.aquabe.auth.JwtTokenUtil;
 import medilux.aquabe.auth.KakaoUtil;
-import medilux.aquabe.domain.type.repository.SkinTypeRepository;
 import medilux.aquabe.domain.user.dto.*;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.repository.UserRepository;
@@ -22,7 +21,7 @@ import static medilux.aquabe.common.error.ErrorCode.*;
 
 
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Service
@@ -173,7 +172,7 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
-        user.update(request.getUsername(), request.getTelephone(), request.getUserImage(), request.getUserAge());
+        user.update(request.getUsername(), request.getTelephone(), request.getUserAge());
         userRepository.saveAndFlush(user);
 
         userVanityRepository.findById(user.getUserId()).orElseGet(() -> {
@@ -192,6 +191,15 @@ public class UserService {
                 .userImage(user.getUserImage())
                 .userAge(user.getUserAge())
                 .build();
+    }
+
+    @Transactional
+    public void updateUserImage(String loginEmail, MultipartFile file) {
+        UserEntity user = userRepository.findByEmail(loginEmail)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
+        String imageUrl = s3ImageService.upload(file);
+        user.updateUserImage(imageUrl);
+        userRepository.save(user);
     }
 
     @Transactional
