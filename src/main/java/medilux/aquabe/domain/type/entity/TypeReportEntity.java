@@ -31,4 +31,13 @@ public class TypeReportEntity {
     private String loion_summary;
     @Lob
     private String lotion_details;
+
+    private String sig_effect;
+
+    @Lob
+    private String yubun_exp;
+    @Lob
+    private String subun_exp;
+    @Lob
+    private String mingam_exp;
 }

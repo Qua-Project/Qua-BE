@@ -19,6 +19,10 @@ public class TypeReportResponse {
     private String serumDetails;
     private String loionSummary;
     private String lotionDetails;
+    private String sig_effect;
+    private String yubun_exp;
+    private String subun_exp;
+    private String mingam_exp;
 
     public static TypeReportResponse fromEntity(TypeReportEntity entity) {
         return TypeReportResponse.builder()
@@ -34,6 +38,10 @@ public class TypeReportResponse {
                 .serumDetails(entity.getSerum_details())
                 .loionSummary(entity.getLoion_summary())
                 .lotionDetails(entity.getLotion_details())
+                .sig_effect(entity.getSig_effect())
+                .yubun_exp(entity.getYubun_exp())
+                .subun_exp(entity.getSubun_exp())
+                .mingam_exp(entity.getMingam_exp())
                 .build();
     }
 }

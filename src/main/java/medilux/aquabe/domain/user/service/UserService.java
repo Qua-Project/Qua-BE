@@ -10,6 +10,8 @@ import medilux.aquabe.domain.type.repository.SkinTypeRepository;
 import medilux.aquabe.domain.user.dto.*;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.repository.UserRepository;
+import medilux.aquabe.domain.vanity.entity.UserVanityEntity;
+import medilux.aquabe.domain.vanity.repository.UserVanityRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserVanityRepository userVanityRepository;
 
     private final S3ImageService s3ImageService;
 
@@ -173,8 +176,20 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
-        user.update(request.getUsername(), request.getEmail(), request.getTelephone(), request.getUserAge());
-        userRepository.save(user);
+        user.update(request.getUsername(), request.getEmail(), request.getTelephone(),
+                request.getUserImage(), request.getUserAge());
+        userRepository.saveAndFlush(user);
+
+        userVanityRepository.findById(user.getUserId()).orElseGet(() -> {
+
+            UserVanityEntity vanity = UserVanityEntity.builder()
+                    .user(user)
+                    .build();
+
+            userVanityRepository.save(vanity);
+
+            return vanity;
+        });
 
         return UserUpdateResponse.builder()
                 .username(user.getUsername())

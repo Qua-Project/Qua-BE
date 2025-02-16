@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import medilux.aquabe.domain.product.dto.ProductDetailSearchResponse;
 import medilux.aquabe.domain.product.dto.ProductSearchResponse;
 import medilux.aquabe.domain.product.service.ProductService;
+import medilux.aquabe.domain.search.service.SearchLogService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -17,6 +17,7 @@ import java.util.UUID;
 public class ProductController {
 
     private final ProductService productService;
+    private final SearchLogService searchKeywordService;
 
     // 제품 검색 이름 API
     @GetMapping("/search")
@@ -24,6 +25,10 @@ public class ProductController {
             @RequestParam(name = "query", required = false) String query,
             @RequestParam(name = "category", required = false) Integer category,
             @RequestParam(name = "type", required = false) String type) {
+
+        if (query != null && !query.trim().isEmpty()) {
+            searchKeywordService.saveSearchKeyword(query);
+        }
 
         List<ProductSearchResponse> products = productService.searchProducts(query, category, type);
         return ResponseEntity.ok(products);

@@ -13,7 +13,7 @@ public class FriendResponse {
 
     public FriendResponse(FriendEntity friendEntity) {
         this.friendId = friendEntity.getFriendId();
-        this.userId = friendEntity.getUserId();
-        this.friendUserId = friendEntity.getFriendUserId();
+        this.userId = friendEntity.getUser().getUserId();
+        this.friendUserId = friendEntity.getFriendUser().getUserId();
     }
 }
