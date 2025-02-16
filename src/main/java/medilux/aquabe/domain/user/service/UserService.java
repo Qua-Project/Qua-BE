@@ -3,6 +3,7 @@ package medilux.aquabe.domain.user.service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import medilux.aquabe.auth.AppleUtil;
 import medilux.aquabe.auth.JwtTokenUtil;
 import medilux.aquabe.auth.KakaoUtil;
 import medilux.aquabe.domain.type.repository.SkinTypeRepository;
@@ -38,6 +39,8 @@ public class UserService {
 
     private final KakaoUtil kakaoUtil;
 
+    private final AppleUtil appleUtil;
+
 
     @Value("${spring.jwt.secret}")
     private String secretKey;
@@ -47,13 +50,13 @@ public class UserService {
 
     //카카오 회원가입 & 로그인
     @Transactional
-    public void oAuthLogin(String accessCode, HttpServletResponse httpServletResponse){
+    public void oAuthKakaoLogin(String accessCode, HttpServletResponse httpServletResponse){
         KakaoResponse.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         KakaoResponse.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         String email = kakaoProfile.getKakaoAccount().getEmail();
 
         UserEntity user = userRepository.findByEmail(email)
-                .orElseGet(() -> createNewUser(kakaoProfile));
+                .orElseGet(() -> createNewKakaoUser(kakaoProfile));
 
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
 
@@ -62,17 +65,40 @@ public class UserService {
     }
 
 
-    private UserEntity createNewUser(KakaoResponse.KakaoProfile kakaoProfile) {
+    private UserEntity createNewKakaoUser(KakaoResponse.KakaoProfile kakaoProfile) {
         UserEntity newUser = UserEntity.builder()
-                .username(kakaoProfile.getKakaoAccount().getProfile().getNickname())
                 .email(kakaoProfile.getKakaoAccount().getEmail())
-                .password("1234")
                 .build();
 
-
-        UserEntity savedUser = userRepository.save(newUser);
-        return savedUser;
+        return userRepository.save(newUser);
     }
+
+    @Transactional
+    public void oAuthAppleLogin(String identityToken, HttpServletResponse httpServletResponse) {
+        AppleResponse.AppleUser appleUser = appleUtil.getUserInfoFromToken(identityToken);
+        String sub = appleUser.getSub();
+
+        UserEntity user = userRepository.findByAppleSub(sub)
+                .orElseGet(() -> createNewAppleUser(appleUser));
+
+        String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
+        httpServletResponse.setHeader("Authorization", "Bearer " + token);
+    }
+
+
+    private UserEntity createNewAppleUser(AppleResponse.AppleUser appleUser) {
+
+        UserEntity newUser = UserEntity.builder()
+                .email(appleUser.getEmail())
+                .appleSub(appleUser.getSub())
+                .build();
+
+        return userRepository.save(newUser);
+    }
+
+
+
+
 
     @Transactional(readOnly = true)
     public UserResponse findUser(String loginEmail){
@@ -106,7 +132,6 @@ public class UserService {
         // 사용자 생성 및 저장
         UserEntity userEntity = UserEntity.builder()
                 .username(request.getUsername())
-                .password(request.getPassword())
                 .email(request.getEmail())
                 .telephone(request.getTelephone())
                 .userAge(request.getUserAge())
@@ -123,7 +148,6 @@ public class UserService {
                 .userId(userEntity.getUserId())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
-                .password(userEntity.getPassword()) // 실제 비밀번호 대신 암호화된 데이터 권장
                 .telephone(userEntity.getTelephone())
                 .userAge(userEntity.getUserAge())
                 .userImage(imageUrl)
@@ -143,6 +167,7 @@ public class UserService {
         String token = JwtTokenUtil.createToken(user.getEmail(), secretKey, expiredMs);
 
         httpServletResponse.setHeader("Authorization", "Bearer " + token);
+
     }
 
     // 사용자 정보 수정

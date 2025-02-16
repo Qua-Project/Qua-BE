@@ -32,7 +32,13 @@ public class UserController {
     //카카오 로그인 & 회원가입
     @GetMapping("/login/kakao")
     public ResponseEntity<Void> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
-        userService.oAuthLogin(accessCode, httpServletResponse);
+        userService.oAuthKakaoLogin(accessCode, httpServletResponse);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/login/apple")
+    public ResponseEntity<Void> appleLogin(@RequestParam("code") String authorizationCode, HttpServletResponse httpServletResponse) {
+        userService.oAuthAppleLogin(authorizationCode, httpServletResponse);
         return ResponseEntity.ok().build();
     }
 
