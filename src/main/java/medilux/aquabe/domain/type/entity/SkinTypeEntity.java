@@ -30,19 +30,22 @@ public class SkinTypeEntity {
     private Integer ubunScore;
     private Integer subunScore;
     private Integer mingamScore;
+    private String skinConcern;
 
-    public SkinTypeEntity(UserEntity user, String skinType, Integer ubunScore, Integer subunScore, Integer mingamScore) {
+    public SkinTypeEntity(UserEntity user, String skinType, Integer ubunScore, Integer subunScore, Integer mingamScore, String skinConcern) {
         this.user = user;
         this.skinType = skinType;
         this.ubunScore = ubunScore;
         this.subunScore = subunScore;
         this.mingamScore = mingamScore;
+        this.skinConcern = skinConcern;
     }
 
-    public void updateSkinType(String skinType, Integer ubunScore, Integer subunScore, Integer mingamScore) {
+    public void updateSkinType(String skinType, Integer ubunScore, Integer subunScore, Integer mingamScore, String skinConcern) {
         this.skinType = skinType;
         this.ubunScore = ubunScore;
         this.subunScore = subunScore;
         this.mingamScore = mingamScore;
+        this.skinConcern = skinConcern;
     }
 }

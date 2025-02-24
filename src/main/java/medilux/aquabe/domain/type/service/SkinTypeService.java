@@ -60,7 +60,8 @@ public class SkinTypeService {
                 request.getSkinType(),
                 request.getUbunScore(),
                 request.getSubunScore(),
-                request.getMingamScore()
+                request.getMingamScore(),
+                request.getSkinConcern()
         );
 
         skinTypeRepository.save(skinType);
@@ -80,7 +81,8 @@ public class SkinTypeService {
                 request.getSkinType(),
                 request.getUbunScore(),
                 request.getSubunScore(),
-                request.getMingamScore()
+                request.getMingamScore(),
+                request.getSkinConcern()
         );
     }
 

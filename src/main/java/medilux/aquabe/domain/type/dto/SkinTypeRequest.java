@@ -10,4 +10,5 @@ public class SkinTypeRequest {
     private Integer ubunScore;
     private Integer subunScore;
     private Integer mingamScore;
+    private String skinConcern;
 }
