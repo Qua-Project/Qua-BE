@@ -3,6 +3,8 @@ package medilux.aquabe.domain.product.controller;
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.domain.product.dto.ProductDetailSearchResponse;
 import medilux.aquabe.domain.product.dto.ProductSearchResponse;
+import medilux.aquabe.domain.product.dto.ReportDetailRequest;
+import medilux.aquabe.domain.product.dto.ReportDetailResponse;
 import medilux.aquabe.domain.product.service.ProductService;
 import medilux.aquabe.domain.search.service.SearchLogService;
 import org.springframework.http.ResponseEntity;
@@ -41,5 +43,11 @@ public class ProductController {
     public ResponseEntity<ProductDetailSearchResponse> getProductDetail(@PathVariable("product_id") UUID productId) {
         ProductDetailSearchResponse product = productService.getProductDetail(productId);
         return ResponseEntity.ok(product);
+    }
+
+    @GetMapping("/{product_id}/report")
+    public ResponseEntity<List<ReportDetailResponse>> getProductReport(@RequestParam UUID productId) {
+        List<ReportDetailResponse> response = productService.getReportDetail(productId);
+        return ResponseEntity.ok(response);
     }
 }
