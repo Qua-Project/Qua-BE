@@ -5,16 +5,14 @@ import medilux.aquabe.common.error.ErrorCode;
 import medilux.aquabe.common.error.exceptions.BadRequestException;
 import medilux.aquabe.domain.product.dto.ProductDetailSearchResponse;
 import medilux.aquabe.domain.product.dto.ProductSearchResponse;
-import medilux.aquabe.domain.product.dto.ReportDetailRequest;
 import medilux.aquabe.domain.product.dto.ReportDetailResponse;
 import medilux.aquabe.domain.product.entity.CategoryEntity;
 import medilux.aquabe.domain.product.entity.ProductEntity;
 import medilux.aquabe.domain.product.entity.ReportDetailEntity;
-import medilux.aquabe.domain.product.repository.ProductRepository;
-import medilux.aquabe.domain.product.repository.ProductUsedFrequencyRepository;
-import medilux.aquabe.domain.product.repository.ReportDetailsRepository;
+import medilux.aquabe.domain.product.repository.*;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.UUID;
@@ -26,6 +24,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductUsedFrequencyRepository productUsedFrequencyRepository;
     private final ReportDetailsRepository reportDetailsRepository;
+    private final TonerDetailsRepository tonerDetailsRepository;
+    private final SerumDetailsRepository serumDetailsRepository;
+    private final LotionCreamDetailsRepository lotionCreamDetailsRepository;
 
     // 제품 검색 로직
     public List<ProductSearchResponse> searchProducts(String query, Integer category, String type) {
@@ -75,14 +76,6 @@ public class ProductService {
 
 
     //적합도 분석 리포트 조회
-    //일단 토너부터하면
-    // toner_details에 있는 score를 가지고 표출하면 됨
-    // 토너 : 보습, 진정, 장벽강화
-    // + 피지조절, 모공케어, 트러블케어, 각질케어(이건 점수가 상위 10개인경우) -> 여기서 로직필요
-    // 들어오는게 토너인지, 세럼인지,로션&크림인지 request 요청이 확실해야함
-    // 그럼 request에서 뭘 부를지 정해줘야 되는건데 그걸 ㅅㅂ 그냥 깡으로 정해줘야 함 ㅋㅋ
-    // request에서 화장품 id를 받고, 그걸로 category_id를 가져와서 토너인지 뭔지 체크를 함.
-    // category : 1 토너이면 보습, 진정, 장벽강화를 무조건 불러와야함. 그건 어케 가져오냐? 그냥 토너일 때 가져올 값을 어떻게 관리할까
     public List<ReportDetailResponse> getReportDetail(UUID productId) {
         CategoryEntity category = productRepository.findById(productId)
                 .map(ProductEntity::getCategory)
@@ -90,12 +83,35 @@ public class ProductService {
 
         List<String> keywords;
         if (category.getCategoryId() == 1) {
-            keywords = List.of("boseup", "jinjung", "jangbyeok"); // 1일 때 3개 추가
+            // toner_details
+            // toner는 db에 값을 추가로 더 넣어줘야 됨
+            String tonerCategories = tonerDetailsRepository.findTop10Categories(productId);
+            System.out.println("tonerCategories = " + tonerCategories);
+            if (tonerCategories != null && !tonerCategories.isEmpty()) {
+                keywords = Arrays.asList(tonerCategories.split(","));
+            } else{
+                keywords = List.of("boseup", "jinjung", "jangbyeok"); // 1일 때 3개 추가
+            }
         } else if (category.getCategoryId() == 3 || category.getCategoryId() == 4) {
-            keywords = List.of("boseup"); // 3, 4일 때 '보습'만 추가
+            // lotion_cream_details
+            String lotionCreamCategories = lotionCreamDetailsRepository.findTop10Categories(productId);
+            System.out.println("lotionCreamCategories = " + lotionCreamCategories);
+            if (lotionCreamCategories != null && !lotionCreamCategories.isEmpty()) {
+                keywords = Arrays.asList(lotionCreamCategories.split(","));
+            } else{
+                keywords = List.of("boseup"); // 3, 4일 때 '보습'만 추가
+            }
         } else {
-            keywords = List.of(); // 2일 때는 아무것도 추가 안 함
+            String serumCategories = serumDetailsRepository.findTop10Categories(productId);
+            System.out.println("serumCategories = " + serumCategories);
+            // serum_details
+            if (serumCategories != null && !serumCategories.isEmpty()) {
+                keywords = Arrays.asList(serumCategories.split(","));
+            } else{
+                keywords = List.of(); // 2일 때는 아무것도 추가 안 함
+            }
         }
+
 
         if (keywords.isEmpty()) {
             return List.of();
@@ -113,4 +129,6 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+
+    //피부 타입 관련
 }
