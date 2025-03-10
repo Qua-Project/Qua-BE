@@ -1,6 +1,7 @@
 package medilux.aquabe.domain.user.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import medilux.aquabe.domain.user.dto.*;
