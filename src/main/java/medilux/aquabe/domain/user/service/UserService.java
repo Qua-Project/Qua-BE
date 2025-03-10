@@ -116,6 +116,7 @@ public class UserService {
                 .userImage(user.getUserImage())
                 .birthDate(birthDate)
                 .userAge(userAge)
+                .gender(user.getGender())
                 .username(user.getUsername()).build();
 
     }
