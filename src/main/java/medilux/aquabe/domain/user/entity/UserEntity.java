@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.hibernate.annotations.UuidGenerator.Style.RANDOM;
@@ -29,16 +30,14 @@ public class UserEntity {
     private String email;
 
     @Column(nullable = true)
-    private String telephone;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = true)
-    private LocalDate createdAt = LocalDate.now();
+    private LocalDateTime updatedAt;
+
 
     @Column(nullable = true)
     private String userImage;
-
-    @Column(nullable = true)
-    private Integer userAge;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
@@ -51,22 +50,21 @@ public class UserEntity {
     private String appleSub;
 
     @Builder
-    public UserEntity(String username, String email, String telephone,
-                      String userImage, Integer userAge, Gender gender, LocalDate birthDate, String appleSub) {
+    public UserEntity(String username, String email,
+                      String userImage, Gender gender, LocalDate birthDate, String appleSub) {
         this.username = username;
         this.email = email;
-        this.telephone = telephone;
         this.userImage = userImage;
-        this.userAge = userAge;
         this.gender = gender;
         this.birthDate = birthDate;
         this.appleSub = appleSub;
     }
 
-    public void update(String username, String telephone, Integer userAge) {
+    public void update(String username, LocalDate birthDate, Gender gender) {
         this.username = username;
-        this.telephone = telephone;
-        this.userAge = userAge;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void updateUserImage(String userImage) {
