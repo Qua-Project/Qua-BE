@@ -6,6 +6,8 @@ import medilux.aquabe.domain.product.dto.ProductSearchResponse;
 import medilux.aquabe.domain.product.service.ProductService;
 import medilux.aquabe.domain.search.service.SearchLogService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,15 +24,18 @@ public class ProductController {
     // 제품 검색 이름 API
     @GetMapping("/search")
     public ResponseEntity<List<ProductSearchResponse>> searchProducts(
-            @RequestParam(name = "query", required = false) String query,
+            @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "category", required = false) Integer category,
             @RequestParam(name = "type", required = false) String type) {
-
-        if (query != null && !query.trim().isEmpty()) {
-            searchKeywordService.saveSearchKeyword(query);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String loginEmail = authentication.getName();
+        //검색어 저장
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            searchKeywordService.saveSearchKeyword(loginEmail, keyword);
         }
 
-        List<ProductSearchResponse> products = productService.searchProducts(query, category, type);
+
+        List<ProductSearchResponse> products = productService.searchProducts(keyword, category, type);
         return ResponseEntity.ok(products);
     }
 

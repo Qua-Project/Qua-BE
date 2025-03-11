@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "search_logs")
+@Table(name = "search_logs_popular")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SearchLogEntity {
+public class SearchLogPopularEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +21,7 @@ public class SearchLogEntity {
     private LocalDateTime searchedAt;  // 검색된 시간 저장
 
     @Builder
-    public SearchLogEntity(String keyword) {
+    public SearchLogPopularEntity(String keyword) {
         this.keyword = keyword;
         this.searchedAt = LocalDateTime.now();
     }
