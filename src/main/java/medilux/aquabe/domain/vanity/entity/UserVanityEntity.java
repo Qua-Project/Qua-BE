@@ -26,12 +26,15 @@ public class UserVanityEntity {
     private UserEntity user;
 
     @Column(nullable = false)
+    @Builder.Default
     private Integer vanityScore = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private Integer viewCount = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private Integer likeCount = 0;
 
     @Builder

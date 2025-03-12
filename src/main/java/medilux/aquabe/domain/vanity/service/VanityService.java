@@ -252,11 +252,8 @@ public class VanityService {
             entity.setFrequencyCnt(entity.getFrequencyCnt() + 1);
             productUsedFrequencyRepository.save(entity);
         } else {
-            ProductUsedFrequencyEntity newEntity = ProductUsedFrequencyEntity.builder()
-                    .productId(productId)
-                    .typeName(skinType)
-                    .frequencyCnt(1)
-                    .build();
+            ProductUsedFrequencyEntity newEntity = ProductUsedFrequencyEntity.of(productId, skinType, 1);
+
             productUsedFrequencyRepository.save(newEntity);
         }
     }
@@ -281,9 +278,7 @@ public class VanityService {
                 .orElseGet(() -> {
                     UserEntity user = userRepository.findById(userId)
                             .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
-                    return UserVanityEntity.builder()
-                            .user(user)
-                            .build();
+                    return UserVanityEntity.of(user);
                 });
 
         userVanity.updateVanityScore(updatedVanityScore);
