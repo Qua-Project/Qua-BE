@@ -105,7 +105,7 @@ public class VanityService {
                 .orElse(0.0));
 
         // 평균 적합도 계산
-        CompatibilityRatio averageRatio = calculateAverageCompatibilityRatio(products);
+        CompatibilityRatio averageCompatibilityRatio = calculateAverageCompatibilityRatio(products);
 
         // 점수 초기화
         Integer averageBoseupScore = null, averageJinjungScore = null, averageJangbyeokScore = null, averageTroubleScore = null, averageGakjilScore = null;
@@ -132,10 +132,27 @@ public class VanityService {
             averageGakjilScoreSerum = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getGakjilScore).average().orElse(0.0));
         }
 
-        return new VanityCategoryAverageResponse(averageScore, averageRatio,
-                averageBoseupScore, averageJinjungScore, averageJangbyeokScore, averageTroubleScore, averageGakjilScore,
-                averageJureumScore, averageMibaekScore, averageMogongScore, averageTroubleScoreSerum, averagePijiScore, averageHongjoScore, averageGakjilScoreSerum,
-                averageBoseupScoreLotion, averageJinjungScoreLotion, averageJangbyeokScoreLotion, averageYubunScore, averageJageukScore);
+        return VanityCategoryAverageResponse.builder()
+                .averageScore(averageScore)
+                .averageCompatibilityRatio(averageCompatibilityRatio)
+                .averageBoseupScore(averageBoseupScore)
+                .averageJinjungScore(averageJinjungScore)
+                .averageJangbyeokScore(averageJangbyeokScore)
+                .averageTroubleScore(averageTroubleScore)
+                .averageGakjilScore(averageGakjilScore)
+                .averageJureumScore(averageJureumScore)
+                .averageMibaekScore(averageMibaekScore)
+                .averageMogongScore(averageMogongScore)
+                .averageTroubleScoreSerum(averageTroubleScoreSerum)
+                .averagePijiScore(averagePijiScore)
+                .averageHongjoScore(averageHongjoScore)
+                .averageGakjilScoreSerum(averageGakjilScoreSerum)
+                .averageBoseupScoreLotion(averageBoseupScoreLotion)
+                .averageJinjungScoreLotion(averageJinjungScoreLotion)
+                .averageJangbyeokScoreLotion(averageJangbyeokScoreLotion)
+                .averageYubunScore(averageYubunScore)
+                .averageJageukScore(averageJageukScore)
+                .build();
     }
 
 

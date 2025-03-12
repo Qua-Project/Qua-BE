@@ -12,7 +12,7 @@ import java.util.UUID;
 @Repository
 public interface ProductScorePerTypeRepository extends JpaRepository<ProductScorePerTypeEntity, ProductScorePerTypeEntity.ProductScorePerTypeId> {
 
-    ProductScorePerTypeEntity findByTypeNameAndProduct_ProductId(String typeName, UUID productId);
+    Optional<ProductScorePerTypeEntity> findByTypeNameAndProduct_ProductId(String typeName, UUID productId);
 
     Optional<ProductScorePerTypeEntity> findByProductAndTypeName(ProductEntity product, String typeName);
 }

@@ -1,6 +1,8 @@
 package medilux.aquabe.domain.product.service;
 
 import lombok.RequiredArgsConstructor;
+import medilux.aquabe.common.error.ErrorCode;
+import medilux.aquabe.common.error.exceptions.BadRequestException;
 import medilux.aquabe.domain.product.dto.ProductDetailSearchResponse;
 import medilux.aquabe.domain.product.dto.ProductSearchResponse;
 import medilux.aquabe.domain.product.entity.ProductEntity;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.UUID;
+
+import static medilux.aquabe.common.error.ErrorCode.ROW_DOES_NOT_EXIST;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +40,7 @@ public class ProductService {
 
                     // ProductEntity 조회
                     ProductEntity product = productRepository.findById(productId)
-                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 제품입니다: " + productId));
+                            .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 제품입니다: " + productId));
 
                     return ProductSearchResponse.builder()
                             .productId(product.getProductId())
@@ -53,7 +57,7 @@ public class ProductService {
     // 제품 상세 조회 로직
     public ProductDetailSearchResponse getProductDetail(UUID productId) {
         ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 제품이 존재하지 않습니다."));
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "해당 제품이 존재하지 않습니다."));
 
         return ProductDetailSearchResponse.builder()
                 .productId(product.getProductId())

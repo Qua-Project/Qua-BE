@@ -42,7 +42,7 @@ public class FriendService {
         }
 
         // 새로운 친구 관계 생성
-        FriendEntity friendEntity = new FriendEntity(user, friendUser);
+        FriendEntity friendEntity = FriendEntity.of(user, friendUser);
         friendRepository.save(friendEntity);
 
         return new FriendResponse(friendEntity);

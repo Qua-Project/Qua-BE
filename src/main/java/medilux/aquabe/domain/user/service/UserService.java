@@ -65,11 +65,7 @@ public class UserService {
 
 
     private UserEntity createNewKakaoUser(KakaoResponse.KakaoProfile kakaoProfile) {
-        UserEntity newUser = UserEntity.builder()
-                .email(kakaoProfile.getKakaoAccount().getEmail())
-                .build();
-        //디폴트 프로필 이미지 넣기
-
+        UserEntity newUser = UserEntity.of(kakaoProfile.getKakaoAccount().getEmail());
         return userRepository.save(newUser);
     }
 
@@ -89,10 +85,7 @@ public class UserService {
     private UserEntity createNewAppleUser(AppleResponse.AppleUser appleUser) {
 
         //디폴트 프로필 이미지 넣기
-        UserEntity newUser = UserEntity.builder()
-                .email(appleUser.getEmail())
-                .appleSub(appleUser.getSub())
-                .build();
+        UserEntity newUser = UserEntity.of(appleUser.getEmail(), appleUser.getSub());
 
         return userRepository.save(newUser);
     }
@@ -188,9 +181,7 @@ public class UserService {
         userRepository.saveAndFlush(user);
 
         userVanityRepository.findById(user.getUserId()).orElseGet(() -> {
-            UserVanityEntity vanity = UserVanityEntity.builder()
-                    .user(user)
-                    .build();
+            UserVanityEntity vanity = UserVanityEntity.of(user);
 
             userVanityRepository.save(vanity);
             return vanity;

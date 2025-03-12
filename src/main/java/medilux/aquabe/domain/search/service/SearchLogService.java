@@ -36,8 +36,8 @@ public class SearchLogService {
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
-        searchLogRecentRepository.save(new SearchLogRecentEntity(keyword, user));
-        searchLogPopularRepository.save(new SearchLogPopularEntity(keyword));
+        searchLogRecentRepository.save(SearchLogRecentEntity.of(keyword, user));
+        searchLogPopularRepository.save(SearchLogPopularEntity.of(keyword));
     }
 
     // 인기 검색어 조회 (24시간 기준)
@@ -51,7 +51,7 @@ public class SearchLogService {
                         .ranking(i + 1)
                         .keyword((String) topKeywords.get(i)[0])
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)

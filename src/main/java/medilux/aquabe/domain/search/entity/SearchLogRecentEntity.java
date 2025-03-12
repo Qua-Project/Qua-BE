@@ -2,10 +2,7 @@ package medilux.aquabe.domain.search.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -16,6 +13,8 @@ import java.time.LocalDateTime;
 @Getter
 @Table(name = "search_logs_recent")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class SearchLogRecentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,10 +33,12 @@ public class SearchLogRecentEntity {
 
 
     @Builder
-    public SearchLogRecentEntity(String keyword, UserEntity user) {
-        this.keyword = keyword;
-        this.searchedAt = LocalDateTime.now();
-        this.user = user;
+    public static SearchLogRecentEntity of(String keyword, UserEntity user) {
+        return SearchLogRecentEntity.builder()
+                .keyword(keyword)
+                .searchedAt(LocalDateTime.now())
+                .user(user)
+                .build();
     }
 
 

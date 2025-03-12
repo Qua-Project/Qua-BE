@@ -10,7 +10,9 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @Table(name = "ProductUsedFrequency")
 @IdClass(ProductUsedFrequencyEntity.ProductUsedFrequencyId.class)
 public class ProductUsedFrequencyEntity {
@@ -24,11 +26,12 @@ public class ProductUsedFrequencyEntity {
     @Column(nullable = false)
     private Integer frequencyCnt; // 빈도
 
-    @Builder
-    public ProductUsedFrequencyEntity(UUID productId, String typeName, Integer frequencyCnt) {
-        this.productId = productId;
-        this.typeName = typeName;
-        this.frequencyCnt = frequencyCnt;
+    public static ProductUsedFrequencyEntity of(UUID productId, String typeName, Integer frequencyCnt) {
+        return ProductUsedFrequencyEntity.builder()
+                .productId(productId)
+                .typeName(typeName)
+                .frequencyCnt(frequencyCnt)
+                .build();
     }
 
     public void setFrequencyCnt(Integer frequencyCnt) {
