@@ -1,10 +1,7 @@
 package medilux.aquabe.domain.vanity.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import medilux.aquabe.domain.product.entity.ProductEntity;
 import medilux.aquabe.domain.compatibility.entity.CompatibilityRatio;
 
@@ -15,6 +12,8 @@ import java.util.UUID;
 @Getter
 @Table(name = "VanityProducts")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @IdClass(VanityProductsEntity.VanityProductsId.class)
 public class VanityProductsEntity {
 
@@ -40,7 +39,6 @@ public class VanityProductsEntity {
     @Column(nullable = false)
     private CompatibilityRatio compatibilityRatio; // ProductScorePerType에서 가져온 값 저장
 
-    @Builder
     public static VanityProductsEntity of(UUID userId, ProductEntity product, Integer categoryId ,Integer compatibilityScore, Integer ranking, CompatibilityRatio compatibilityRatio) {
         return VanityProductsEntity.builder()
                 .userId(userId)

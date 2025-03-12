@@ -218,14 +218,7 @@ public class VanityService {
             CompatibilityRatio compatibilityRatio = productScore.getCompatibilityRatio(); // 적합도
 
             // 화장대에 제품 추가
-            VanityProductsEntity vanityProduct = VanityProductsEntity.builder()
-                    .userId(userId)
-                    .product(product)
-                    .categoryId(categoryId)
-                    .compatibilityScore(compatibilityScore) // 자동 설정된 점수
-                    .ranking(ranking)
-                    .compatibilityRatio(compatibilityRatio) // 자동 설정된 적합도
-                    .build();
+            VanityProductsEntity vanityProduct = VanityProductsEntity.of(userId, product, categoryId, compatibilityScore, ranking, compatibilityRatio);
 
             vanityProductsRepository.save(vanityProduct);
 
