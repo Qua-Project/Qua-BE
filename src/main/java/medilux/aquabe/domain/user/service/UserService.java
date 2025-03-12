@@ -135,13 +135,7 @@ public class UserService {
 //        }
 
         // 사용자 생성 및 저장
-        UserEntity userEntity = UserEntity.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .userImage(imageUrl)
-                .gender(request.getGender())
-                .birthDate(request.getBirthDate())
-                .build();
+        UserEntity userEntity = UserEntity.of(request.getUsername(), request.getEmail(), imageUrl, request.getGender(), request.getBirthDate());
         userRepository.save(userEntity);
 
         // 응답 생성

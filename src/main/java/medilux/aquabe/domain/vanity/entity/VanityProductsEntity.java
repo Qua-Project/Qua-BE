@@ -41,13 +41,15 @@ public class VanityProductsEntity {
     private CompatibilityRatio compatibilityRatio; // ProductScorePerType에서 가져온 값 저장
 
     @Builder
-    public VanityProductsEntity(UUID userId, ProductEntity product, Integer categoryId ,Integer compatibilityScore, Integer ranking, CompatibilityRatio compatibilityRatio) {
-        this.userId = userId;
-        this.product = product;
-        this.categoryId = categoryId;
-        this.compatibilityScore = compatibilityScore;
-        this.ranking = ranking;
-        this.compatibilityRatio = compatibilityRatio;
+    public static VanityProductsEntity of(UUID userId, ProductEntity product, Integer categoryId ,Integer compatibilityScore, Integer ranking, CompatibilityRatio compatibilityRatio) {
+        return VanityProductsEntity.builder()
+                .userId(userId)
+                .product(product)
+                .categoryId(categoryId)
+                .compatibilityScore(compatibilityScore)
+                .compatibilityRatio(compatibilityRatio)
+                .ranking(ranking)
+                .build();
     }
 
     @Getter

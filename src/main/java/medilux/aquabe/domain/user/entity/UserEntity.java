@@ -61,6 +61,17 @@ public class UserEntity {
                 .build();
     }
 
+    //임시 회원가입용
+    public static UserEntity of(String username, String email, String imageUrl, Gender gender, LocalDate birthDate) {
+        return UserEntity.builder()
+                .username(username)
+                .email(email)
+                .userImage(imageUrl)
+                .gender(gender)
+                .birthDate(birthDate)
+                .build();
+    }
+
     public void update(String username, LocalDate birthDate, Gender gender) {
         this.username = username;
         this.birthDate = birthDate;
