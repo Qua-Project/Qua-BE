@@ -1,10 +1,7 @@
 package medilux.aquabe.domain.user.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDate;
@@ -17,6 +14,8 @@ import static org.hibernate.annotations.UuidGenerator.Style.RANDOM;
 @Getter
 @Table(name = "Users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class UserEntity {
 
     @Id
@@ -49,15 +48,28 @@ public class UserEntity {
     @Column(unique = true, nullable = true)
     private String appleSub;
 
-    @Builder
-    public UserEntity(String username, String email,
-                      String userImage, Gender gender, LocalDate birthDate, String appleSub) {
-        this.username = username;
-        this.email = email;
-        this.userImage = userImage;
-        this.gender = gender;
-        this.birthDate = birthDate;
-        this.appleSub = appleSub;
+    public static UserEntity of(String email) {
+        return UserEntity.builder()
+                .email(email)
+                .build();
+    }
+
+    public static UserEntity of(String email, String appleSub) {
+        return UserEntity.builder()
+                .email(email)
+                .appleSub(appleSub)
+                .build();
+    }
+
+    //임시 회원가입용
+    public static UserEntity of(String username, String email, String imageUrl, Gender gender, LocalDate birthDate) {
+        return UserEntity.builder()
+                .username(username)
+                .email(email)
+                .userImage(imageUrl)
+                .gender(gender)
+                .birthDate(birthDate)
+                .build();
     }
 
     public void update(String username, LocalDate birthDate, Gender gender) {

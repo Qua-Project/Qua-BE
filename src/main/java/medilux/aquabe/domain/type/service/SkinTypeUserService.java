@@ -49,7 +49,7 @@ public class SkinTypeUserService {
 
                     // 사용자 화장대 점수 조회
                     UserVanityEntity vanity = userVanityRepository.findByUserId(user.getUserId())
-                            .orElse(new UserVanityEntity(user));
+                            .orElse(UserVanityEntity.of(user));
 
                     return SkinTypeUsersResponse.UserVanityInfo.builder()
                             .userId(user.getUserId().toString())

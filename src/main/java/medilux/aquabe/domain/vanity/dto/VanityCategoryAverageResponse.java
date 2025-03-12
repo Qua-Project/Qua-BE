@@ -1,9 +1,11 @@
 package medilux.aquabe.domain.vanity.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import medilux.aquabe.domain.compatibility.entity.CompatibilityRatio;
 
 @Getter
+@Builder
 public class VanityCategoryAverageResponse {
     private final Integer averageScore;
     private final CompatibilityRatio averageCompatibilityRatio;

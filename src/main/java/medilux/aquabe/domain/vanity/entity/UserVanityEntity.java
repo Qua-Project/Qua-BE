@@ -1,10 +1,7 @@
 package medilux.aquabe.domain.vanity.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -15,6 +12,8 @@ import java.util.UUID;
 @Getter
 @Table(name = "UserVanity")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class UserVanityEntity {
 
     @Id
@@ -36,11 +35,13 @@ public class UserVanityEntity {
     private Integer likeCount = 0;
 
     @Builder
-    public UserVanityEntity(UserEntity user) {
-        this.user = user;
-        this.vanityScore = 0;
-        this.viewCount = 0;
-        this.likeCount = 0;
+    public static UserVanityEntity of(UserEntity user) {
+        return UserVanityEntity.builder()
+                .user(user)
+                .vanityScore(0)
+                .viewCount(0)
+                .likeCount(0)
+                .build();
     }
 
     public void updateVanityScore(int score) {

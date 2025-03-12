@@ -12,6 +12,8 @@ import java.util.UUID;
 @Getter
 @Table(name = "ProductScorePerType")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @IdClass(ProductScorePerTypeEntity.ProductScorePerTypeId.class)
 public class ProductScorePerTypeEntity {
 
@@ -36,29 +38,30 @@ public class ProductScorePerTypeEntity {
     @Column(nullable = false)
     private CompatibilityRatio compatibilityRatio; // 적합도 (Enum)
 
-    @Transient
-    private Integer totalProductsInType; // 같은 typeName을 가진 제품 개수 (DB에 저장X)
+//    @Transient
+//    private Integer totalProductsInType; // 같은 typeName을 가진 제품 개수 (DB에 저장X)
 
-
-    @Builder
-    public ProductScorePerTypeEntity(String typeName, ProductEntity product,
+    public static ProductScorePerTypeEntity of(String typeName, ProductEntity product,
                                      Integer compatibilityScore, Integer ranking,
                                      Integer totalProductsInType) {
-        this.typeName = typeName;
-        this.product = product;
-        this.compatibilityScore = compatibilityScore;
-        this.ranking = ranking;
-        this.totalProductsInType = totalProductsInType;
 
-        // ProductEntity에서 category_id 가져오기
-        this.categoryId = (product != null && product.getCategory() != null)
+        Integer categoryId = (product != null && product.getCategory() != null)
                 ? product.getCategory().getCategoryId()
                 : null;
 
-        this.compatibilityRatio = determineCompatibilityRatio();
+        CompatibilityRatio compatibilityRatio = determineCompatibilityRatio(totalProductsInType, ranking);
+
+        return ProductScorePerTypeEntity.builder()
+                .typeName(typeName)
+                .product(product)
+                .compatibilityScore(compatibilityScore)
+                .ranking(ranking)
+                .categoryId(categoryId)
+                .compatibilityRatio(compatibilityRatio)
+                .build();
     }
 
-    private CompatibilityRatio determineCompatibilityRatio() {
+    private static CompatibilityRatio determineCompatibilityRatio(Integer totalProductsInType, Integer ranking) {
         if (totalProductsInType == null || totalProductsInType == 0) {
             return CompatibilityRatio.NORMAL; // 기본값
         }

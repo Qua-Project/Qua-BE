@@ -22,15 +22,15 @@ public class ProductScorePerTypeResponse {
     private Integer alcohol; // 알코올 점수
     private Integer hyangryo; // 향료 점수
 
-    public static ProductScorePerTypeResponse fromEntity(ProductScorePerTypeEntity entity) {
-        ProductEntity product = entity.getProduct();
-        return ProductScorePerTypeResponse.builder()
-                .typeName(entity.getTypeName())
-                .productId(product.getProductId().toString())
-                .productName(product.getProductName())
-                .productImage(product.getProductImage())
-                .productPrice(product.getProductPrice())
-                .compatibilityScore(entity.getCompatibilityScore())
-                .build();
-    }
+//    public static ProductScorePerTypeResponse fromEntity(ProductScorePerTypeEntity entity) {
+//        ProductEntity product = entity.getProduct();
+//        return ProductScorePerTypeResponse.builder()
+//                .typeName(entity.getTypeName())
+//                .productId(product.getProductId().toString())
+//                .productName(product.getProductName())
+//                .productImage(product.getProductImage())
+//                .productPrice(product.getProductPrice())
+//                .compatibilityScore(entity.getCompatibilityScore())
+//                .build();
+//    }
 }

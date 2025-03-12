@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 @Getter
 @Table(name = "search_logs_popular")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class SearchLogPopularEntity {
 
     @Id
@@ -20,9 +22,10 @@ public class SearchLogPopularEntity {
     @Column(nullable = false)
     private LocalDateTime searchedAt;  // 검색된 시간 저장
 
-    @Builder
-    public SearchLogPopularEntity(String keyword) {
-        this.keyword = keyword;
-        this.searchedAt = LocalDateTime.now();
+    public static SearchLogPopularEntity of(String keyword) {
+        return SearchLogPopularEntity.builder()
+                .keyword(keyword)
+                .searchedAt(LocalDateTime.now())
+                .build();
     }
 }
