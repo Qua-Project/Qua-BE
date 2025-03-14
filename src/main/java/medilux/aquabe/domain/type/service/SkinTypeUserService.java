@@ -32,7 +32,7 @@ public class SkinTypeUserService {
 
     // 특정 피부 타입의 사용자 및 화장대 점수 조회
     @Transactional(readOnly = true)
-    public SkinTypeUsersResponse getUsersBySkinType(String typeName) {
+    public SkinTypeUsersResponse getUsersBySkinType(String typeName, Boolean isTop3) {
         // 피부 타입에 해당하는 사용자 조회
         List<SkinTypeEntity> skinTypeEntities = skinTypeUsersRepository.findBySkinType(typeName);
 
@@ -51,15 +51,25 @@ public class SkinTypeUserService {
                     UserVanityEntity vanity = userVanityRepository.findByUserId(user.getUserId())
                             .orElse(UserVanityEntity.of(user));
 
-                    return SkinTypeUsersResponse.UserVanityInfo.builder()
-                            .userId(user.getUserId().toString())
-                            .username(user.getUsername())
-                            .vanityScore(vanity.getVanityScore())
-                            .ubunScore(skinType.getUbunScore())
-                            .subunScore(skinType.getSubunScore())
-                            .mingamScore(skinType.getMingamScore())
-                            .build();
+                    if (isTop3) {
+                        return SkinTypeUsersResponse.UserVanityInfo.fromMin(
+                                user.getUserId().toString(),
+                                user.getUsername(),
+                                vanity.getVanityScore()
+                        );
+                    } else {
+                        return SkinTypeUsersResponse.UserVanityInfo.fromFull(
+                                user.getUserId().toString(),
+                                user.getUsername(),
+                                vanity.getVanityScore(),
+                                skinType.getUbunScore(),
+                                skinType.getSubunScore(),
+                                skinType.getMingamScore()
+                        );
+                    }
                 })
+                .sorted((a, b) -> b.getVanityScore().compareTo(a.getVanityScore()))
+                .limit(isTop3 ? 3 : Long.MAX_VALUE)
                 .collect(Collectors.toList());
 
         return SkinTypeUsersResponse.builder()
@@ -67,4 +77,7 @@ public class SkinTypeUserService {
                 .users(userVanityInfos)
                 .build();
     }
+
+
+
 }

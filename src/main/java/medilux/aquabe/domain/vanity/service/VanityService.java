@@ -64,7 +64,7 @@ public class VanityService {
 
         // DTO 변환 후 반환
         List<VanityProductResponse> productResponses = products.stream()
-                .map(p -> new VanityProductResponse(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
+                .map(p -> VanityProductResponse.fromEntity(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
                 .toList();
 
         return new VanityResponse(userId, vanityScore, productResponses);
@@ -82,7 +82,7 @@ public class VanityService {
 
         // DTO 변환 후 반환
         return products.stream()
-                .map(p -> new VanityProductResponse(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
+                .map(p -> VanityProductResponse.fromEntity(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
                 .toList();
     }
 

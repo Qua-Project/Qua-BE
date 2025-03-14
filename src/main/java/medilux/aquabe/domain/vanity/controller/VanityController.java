@@ -1,5 +1,6 @@
 package medilux.aquabe.domain.vanity.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.dto.AddProductRequest;
@@ -28,6 +29,7 @@ public class VanityController {
     private final UserRepository userRepository;
 
     @GetMapping
+    @Operation(summary = "로그인한 사용자의 화장대 조회 api")
     public ResponseEntity<VanityResponse> getMyVanity() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();

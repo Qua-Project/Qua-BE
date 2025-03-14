@@ -1,9 +1,11 @@
 package medilux.aquabe.domain.vanity.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import medilux.aquabe.domain.product.entity.ProductEntity;
 
 @Getter
+@Builder
 public class VanityProductResponse {
     private final String productId;
     private final String productName;
@@ -15,15 +17,17 @@ public class VanityProductResponse {
     private final Integer ranking;
     private final String compatibilityRatio;
 
-    public VanityProductResponse(ProductEntity product, Integer compatibilityScore, Integer ranking, String compatibilityRatio) {
-        this.productId = product.getProductId().toString();
-        this.productName = product.getProductName();
-        this.productImage = product.getProductImage();
-        this.productPrice = product.getProductPrice();
-        this.productInfo = product.getProductInfo();
-        this.brandName = product.getBrandName();
-        this.compatibilityScore = compatibilityScore;
-        this.ranking = ranking;
-        this.compatibilityRatio = compatibilityRatio;
+    public static VanityProductResponse fromEntity(ProductEntity product, Integer compatibilityScore, Integer ranking, String compatibilityRatio) {
+        return VanityProductResponse.builder()
+                .productId(product.getProductId().toString())
+                .productName(product.getProductName())
+                .productImage(product.getProductImage())
+                .productPrice(product.getProductPrice())
+                .productInfo(product.getProductInfo())
+                .brandName(product.getBrandName())
+                .compatibilityScore(compatibilityScore)
+                .ranking(ranking)
+                .compatibilityRatio(compatibilityRatio)
+                .build();
     }
 }

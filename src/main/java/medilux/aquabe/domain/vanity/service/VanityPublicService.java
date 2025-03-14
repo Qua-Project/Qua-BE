@@ -2,6 +2,7 @@ package medilux.aquabe.domain.vanity.service;
 
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.common.error.exceptions.BadRequestException;
+import medilux.aquabe.domain.compatibility.entity.CompatibilityRatio;
 import medilux.aquabe.domain.user.entity.UserEntity;
 import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.dto.VanityProductResponse;
@@ -26,7 +27,7 @@ public class VanityPublicService {
     private final VanityProductsRepository vanityProductsRepository;
 
     @Transactional(readOnly = true)
-    public VanityResponse getUserVanity(String username) {
+    public VanityResponse getUserVanity(String username, CompatibilityRatio compatibilityRatio) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "해당 사용자가 존재하지 않습니다."));
 
@@ -36,16 +37,20 @@ public class VanityPublicService {
             vanityScore = 0;
         }
 
+        List<VanityProductsEntity> products;
         // 특정 사용자의 화장대 제품 조회 (VanityProductsEntity 리스트 가져오기)
-        List<VanityProductsEntity> products = vanityProductsRepository.findUserVanityProducts(user.getUserId());
-
+        if (compatibilityRatio != null) {
+            products = vanityProductsRepository.findUserVanityProductsByCompatibility(user.getUserId(), compatibilityRatio);
+        } else {
+            products = vanityProductsRepository.findUserVanityProducts(user.getUserId());
+        }
         if (products.isEmpty()) {
             throw new BadRequestException(ROW_DOES_NOT_EXIST, "해당 사용자의 화장대에 제품이 없습니다.");
         }
 
         // DTO 변환 후 반환
         List<VanityProductResponse> productResponses = products.stream()
-                .map(p -> new VanityProductResponse(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
+                .map(p -> VanityProductResponse.fromEntity(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
                 .toList();
 
         return new VanityResponse(user.getUserId(), vanityScore, productResponses);

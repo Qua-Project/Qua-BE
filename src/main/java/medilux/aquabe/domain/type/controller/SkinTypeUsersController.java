@@ -18,11 +18,16 @@ public class SkinTypeUsersController {
 
     // 특정 피부 타입 유저들 보여주기
     @GetMapping("/{type_name}/users/vanities")
-    @Operation(summary = "특정 피부 타입 유저 표출 api(수정 필요)",
-            description = "type_name에 피부타입을 입력해주세요. <br>"
-                    + "상위권인지는 추후에 랭킹으로 정렬해서 다시 반영하겠습니다.")
-    public ResponseEntity<SkinTypeUsersResponse> getUsersBySkinType(@PathVariable("type_name") String typeName) {
-        SkinTypeUsersResponse response = skinTypeUserService.getUsersBySkinType(typeName);
+    @Operation(summary = "특정 피부 타입 유저 표출 api",
+            description = "type_name에 피부타입을 입력해주세요. <br>" +
+                    "isTop3 파라미터 디폴트는 false(전체 조회), true는 top3 반환 및 전체 화장대 점수만 반환")
+    public ResponseEntity<SkinTypeUsersResponse> getUsersBySkinType(
+            @PathVariable("type_name") String typeName,
+            @RequestParam(value = "isTop3", defaultValue = "false") boolean isTop3
+    ) {
+        SkinTypeUsersResponse response = skinTypeUserService.getUsersBySkinType(typeName, isTop3);
         return ResponseEntity.ok(response);
     }
+
+
 }
