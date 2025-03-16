@@ -49,6 +49,7 @@ public class ProductController {
 
     // 제품 상세 조회 API
     @GetMapping("/{product_id}")
+    @Operation(summary = "제품 상세 정보 조회 api")
     public ResponseEntity<ProductDetailSearchResponse> getProductDetail(@PathVariable("product_id") UUID productId) {
         ProductDetailSearchResponse product = productService.getProductDetail(productId);
         return ResponseEntity.ok(product);

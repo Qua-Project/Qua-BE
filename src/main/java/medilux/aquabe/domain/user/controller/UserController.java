@@ -1,5 +1,6 @@
 package medilux.aquabe.domain.user.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,18 +31,24 @@ public class UserController {
 
     //카카오 로그인 & 회원가입
     @GetMapping("/login/kakao")
+    @Operation(summary = "카카오 로그인 & 회원가입 api",
+            description = "카카오 액세스코드를 파라미터로 받아 회원일 시 로그인을, 비회원일 시 회원가입을 진행합니다.")
     public ResponseEntity<Void> kakaoLogin(@RequestParam("code") String accessCode, HttpServletResponse httpServletResponse) {
         userService.oAuthKakaoLogin(accessCode, httpServletResponse);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/login/apple")
-    public ResponseEntity<Void> appleLogin(@RequestParam("code") String authorizationCode, HttpServletResponse httpServletResponse) {
-        userService.oAuthAppleLogin(authorizationCode, httpServletResponse);
+    @Operation(summary = "애플 로그인 & 회원가입 api",
+            description = "애플 토큰을 받아 회원일 시 로그인을, 비회원일 시 회원가입을 진행합니다.")
+    public ResponseEntity<Void> appleLogin(@RequestParam("code") String identityToken, HttpServletResponse httpServletResponse) {
+        userService.oAuthAppleLogin(identityToken, httpServletResponse);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/me")
+    @Operation(summary = "로그인한 사용자의 정보 확인 api",
+            description = "로그인한 사용자의 정보를 확인합니다.")
     public ResponseEntity<UserResponse> findUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
@@ -49,6 +56,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/sign-up", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "테스트용 임시 회원가입 api")
     public ResponseEntity<UserSignUpResponse> signUp(
             @RequestPart(value = "userDetails") String userDetailsJson,
             @RequestPart(value = "userImage", required = false) MultipartFile userImage
@@ -83,6 +91,7 @@ public class UserController {
         }
     }
     @PostMapping("/login")
+    @Operation(summary = "테스트용 임시 로그인 api")
     public ResponseEntity<Void> login(@RequestBody UserLoginRequest request, HttpServletResponse httpServletResponse) {
         userService.login(request, httpServletResponse);
         return ResponseEntity.ok().build();
@@ -97,6 +106,8 @@ public class UserController {
 
     // 사용자 정보 수정
     @PutMapping("/me")
+    @Operation(summary = "사용자 정보 수정 api",
+            description = "서비스 내에서는 소셜 로그인 후 추가 정보 입력 & 사용자정보 수정")
     public ResponseEntity<UserUpdateResponse> updateUser(
             @RequestBody UserUpdateRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -106,6 +117,8 @@ public class UserController {
     }
 
     @PutMapping(value = "/me/updateImage", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "사용자 프로필 수정 api",
+            description = "프로필 사진 수정 api입니다.")
     public ResponseEntity<String> updateUserImage(
             @RequestParam(name = "profileImage", required = false) MultipartFile profileImage
     ){
@@ -117,6 +130,8 @@ public class UserController {
 
     // 사용자 삭제
     @DeleteMapping("/me")
+    @Operation(summary = "사용자 정보 삭제 api",
+            description = "로그인한 사용자가 스스로 삭제하는 api입니다.")
     public ResponseEntity<UserDeleteResponse> deleteUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();

@@ -1,5 +1,6 @@
 package medilux.aquabe.domain.friend.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.domain.friend.dto.FriendDetailResponse;
 import medilux.aquabe.domain.friend.dto.FriendRequest;
@@ -23,6 +24,8 @@ public class FriendController {
 
     // 관심 친구 추가
     @PostMapping("/followings")
+    @Operation(summary = "관심 친구 추가 api",
+            description = "관심 친구 추가")
     public ResponseEntity<FriendResponse> addFriend(
             @RequestBody FriendRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -33,6 +36,7 @@ public class FriendController {
 
     // 관심 친구 삭제
     @DeleteMapping("/followings")
+    @Operation(summary = "관심 친구 삭제 api")
     public ResponseEntity<Void> removeFriend(
             @RequestBody FriendRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -43,6 +47,7 @@ public class FriendController {
 
     // 관심 친구 목록 조회
     @GetMapping("/followings")
+    @Operation(summary = "관심 친구 목록 조회 api")
     public ResponseEntity<List<FriendDetailResponse>> getFollowingsWithDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
@@ -52,6 +57,7 @@ public class FriendController {
 
     // 나를 팔로우하는 사용자 목록 조회
     @GetMapping("/followers")
+    @Operation(summary = "나를 팔로우하는 사용자 목록 api")
     public ResponseEntity<List<FriendDetailResponse>> getFollowersWithDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
@@ -61,6 +67,7 @@ public class FriendController {
 
     // 팔로잉, 팔로워 수 조회
     @GetMapping("/followcounts")
+    @Operation(summary = "팔로잉, 팔로워 수 조회 api")
     public ResponseEntity<Map<String, Integer>> getFriendCounts() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();

@@ -38,6 +38,8 @@ public class VanityController {
     }
 
     @GetMapping("/categories/{category_id}")
+    @Operation(summary = "카테고리별 화장대 조회 api",
+            description = "카테고리별 화장대 조회")
     public ResponseEntity<List<VanityProductResponse>> getProductsByCategory(@PathVariable("category_id") Integer categoryId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
@@ -52,6 +54,8 @@ public class VanityController {
 
 
     @GetMapping("/categories/{category_id}/average")
+    @Operation(summary = "카테고리별 화장대 평균 조회 api",
+            description = "카테고리별 화장대 평균 조회")
     public ResponseEntity<VanityCategoryAverageResponse> getAverageByCategory(@PathVariable("category_id") Integer categoryId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
@@ -66,9 +70,10 @@ public class VanityController {
 
 
     @PostMapping
+    @Operation(summary = "로그인한 사용자의 화장대에 화장품 추가 api",
+            description = "로그인한 사용자의 화장대에 화장품 추가")
     public ResponseEntity<List<VanityProductsEntity>> addProductsToVanity(
             @RequestBody List<AddProductRequest> requests) {
-        // list로 제품 받기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
         List<VanityProductsEntity> addedProducts = vanityService.addProducts(loginEmail, requests);
@@ -78,6 +83,8 @@ public class VanityController {
 
 
     @DeleteMapping("/{product_id}")
+    @Operation(summary = "로그인한 사용자의 화장대에서 화장품 삭제 api",
+            description = "로그인한 사용자의 화장대에서 화장품 삭제")
     public ResponseEntity<Void> removeProductFromVanity(
             @PathVariable("product_id") UUID productId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -87,6 +94,8 @@ public class VanityController {
     }
 
     @GetMapping("/score")
+    @Operation(summary = "로그인한 사용자의 화장대 점수 조회 api",
+            description = "로그인한 사용자의 화장대 점수 조회")
     public ResponseEntity<Integer> getVanityScore() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();

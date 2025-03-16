@@ -74,6 +74,7 @@ public class VanityService {
     // 카테고리별 제품 조회
     @Transactional(readOnly = true)
     public List<VanityProductResponse> getProductsByCategory(UUID userId, Integer categoryId) {
+
         List<VanityProductsEntity> products = vanityProductsRepository.findByUserIdAndProductCategoryCategoryId(userId, categoryId);
 
         if (products.isEmpty()) {
@@ -91,6 +92,7 @@ public class VanityService {
     // 카테고리별 제품 점수 평균 조회
     @Transactional(readOnly = true)
     public VanityCategoryAverageResponse getAverageByCategory(UUID userId, Integer categoryId) {
+
         List<VanityProductsEntity> products = vanityProductsRepository.findByUserIdAndProductCategoryCategoryId(userId, categoryId);
 
         // 제품이 없으면 예외
