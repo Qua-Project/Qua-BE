@@ -5,6 +5,7 @@ import medilux.aquabe.common.error.ErrorCode;
 import medilux.aquabe.common.error.exceptions.BadRequestException;
 import medilux.aquabe.domain.type.repository.SkinTypeRepository;
 import medilux.aquabe.domain.type.service.SkinTypeService;
+import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.repository.UserVanityRepository;
 import medilux.aquabe.domain.type.repository.SkinTypeUsersRepository;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,12 @@ public class UserVanityService {
     private final UserVanityRepository userVanityRepository;
     private final SkinTypeUsersRepository skinTypeUsersRepository;
     private final SkinTypeRepository skinTypeRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public Integer getVanityRank(UUID userId) {
+    public Integer getVanityRank(String username) {
+        UUID userId = userRepository.findUserIdByUsername(username)
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
         // 1. 사용자의 피부 타입 조회
         String skinType = skinTypeRepository.findById(userId)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "사용자의 피부 타입이 존재하지 않습니다."))
