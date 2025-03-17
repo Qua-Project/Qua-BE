@@ -38,8 +38,8 @@ public class VanityController {
     }
 
     @GetMapping("/categories/{category_id}")
-    @Operation(summary = "카테고리별 화장대 조회 api",
-            description = "카테고리별 화장대 조회")
+    @Operation(summary = "로그인한 사용자의 화장대 카테고리별 화장품 조회 api",
+            description = "로그인한 사용자의 화장대 카테고리별 화장품 조회")
     public ResponseEntity<List<VanityProductResponse>> getProductsByCategory(@PathVariable("category_id") Integer categoryId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();
@@ -54,8 +54,8 @@ public class VanityController {
 
 
     @GetMapping("/categories/{category_id}/average")
-    @Operation(summary = "카테고리별 화장대 평균 조회 api",
-            description = "카테고리별 화장대 평균 조회")
+    @Operation(summary = "로그인한 사용자의 화장대 카테고리별 화장품 평균 조회 api",
+            description = "로그인한 사용자의 화장대 카테고리별 화장품  평균 조회")
     public ResponseEntity<VanityCategoryAverageResponse> getAverageByCategory(@PathVariable("category_id") Integer categoryId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String loginEmail = authentication.getName();

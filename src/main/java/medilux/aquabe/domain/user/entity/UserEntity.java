@@ -22,7 +22,7 @@ public class UserEntity {
     @UuidGenerator(style = RANDOM)
     private UUID userId;
 
-    @Column(nullable = true)
+    @Column(unique = true, nullable = true)
     private String username;
 
     @Column(unique = true)
