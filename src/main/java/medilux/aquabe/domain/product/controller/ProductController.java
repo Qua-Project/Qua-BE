@@ -39,8 +39,6 @@ public class ProductController {
         if (keyword != null && !keyword.trim().isEmpty()) {
             searchKeywordService.saveSearchKeyword(loginEmail, keyword);
         }
-
-
         List<ProductSearchResponse> products = productService.searchProducts(keyword, category, type);
         return ResponseEntity.ok(products);
     }
