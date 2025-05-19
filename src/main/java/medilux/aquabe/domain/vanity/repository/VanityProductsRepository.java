@@ -1,5 +1,6 @@
 package medilux.aquabe.domain.vanity.repository;
 
+import medilux.aquabe.domain.compatibility.entity.CompatibilityRatio;
 import medilux.aquabe.domain.vanity.dto.VanityProductResponse;
 import medilux.aquabe.domain.vanity.dto.VanityResponse;
 import medilux.aquabe.domain.vanity.entity.VanityProductsEntity;
@@ -21,4 +22,11 @@ public interface VanityProductsRepository extends JpaRepository<VanityProductsEn
 
     @Query("SELECT vp FROM VanityProductsEntity vp WHERE vp.userId = :userId")
     List<VanityProductsEntity> findUserVanityProducts(@Param("userId") UUID userId);
+
+    @Query("SELECT vp FROM VanityProductsEntity vp WHERE vp.userId = :userId AND vp.compatibilityRatio = :compatibilityRatio")
+    List<VanityProductsEntity> findUserVanityProductsByCompatibility(
+            @Param("userId") UUID userId,
+            @Param("compatibilityRatio") CompatibilityRatio compatibilityRatio);
+
+
 }

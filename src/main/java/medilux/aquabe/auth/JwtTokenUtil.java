@@ -12,10 +12,6 @@ import java.util.Date;
 public class JwtTokenUtil {
     public static String createToken(String email, String secretKey, long expireTimeMs) {
         try {
-            System.out.println("email = " + email);
-            System.out.println("secretKey = " + secretKey);
-            System.out.println("expireTimeMs = " + expireTimeMs);
-            System.out.println("토큰생성좀 해보자");
 
             return Jwts.builder()
                     .claim("email", email)

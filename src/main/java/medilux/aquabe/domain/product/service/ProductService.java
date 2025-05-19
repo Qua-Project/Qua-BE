@@ -1,13 +1,9 @@
 package medilux.aquabe.domain.product.service;
 
 import lombok.RequiredArgsConstructor;
-import medilux.aquabe.common.error.ErrorCode;
 import medilux.aquabe.common.error.exceptions.BadRequestException;
 import medilux.aquabe.domain.product.dto.ProductDetailSearchResponse;
 import medilux.aquabe.domain.product.dto.ProductSearchResponse;
-import medilux.aquabe.domain.product.dto.ReportDetailResponse;
-import medilux.aquabe.domain.product.dto.ReportSkinTypeResponse;
-import medilux.aquabe.domain.product.entity.CategoryEntity;
 import medilux.aquabe.domain.product.entity.ProductEntity;
 import medilux.aquabe.domain.product.entity.ReportDetailEntity;
 import medilux.aquabe.domain.product.entity.TonerDetailsEntity;
@@ -20,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static medilux.aquabe.common.error.ErrorCode.ROW_DOES_NOT_EXIST;
 
 import static medilux.aquabe.common.error.ErrorCode.ROW_DOES_NOT_EXIST;
 
@@ -53,7 +51,7 @@ public class ProductService {
 
                     // ProductEntity 조회
                     ProductEntity product = productRepository.findById(productId)
-                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 제품입니다: " + productId));
+                            .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 제품입니다: " + productId));
 
                     return ProductSearchResponse.builder()
                             .productId(product.getProductId())
@@ -70,7 +68,8 @@ public class ProductService {
     // 제품 상세 조회 로직
     public ProductDetailSearchResponse getProductDetail(UUID productId) {
         ProductEntity product = productRepository.findById(productId)
-                .orElseThrow(() -> new BadRequestException(ErrorCode.ROW_DOES_NOT_EXIST, "해당 제품이 존재하지 않습니다."));
+                .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "해당 제품이 존재하지 않습니다."));
+
 
         return ProductDetailSearchResponse.builder()
                 .productId(product.getProductId())

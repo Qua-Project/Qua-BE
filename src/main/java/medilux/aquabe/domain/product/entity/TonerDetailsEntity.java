@@ -1,10 +1,7 @@
 package medilux.aquabe.domain.product.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -12,6 +9,8 @@ import java.util.UUID;
 @Getter
 @Table(name = "TonerDetails")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class TonerDetailsEntity {
 
     @Id
@@ -27,15 +26,4 @@ public class TonerDetailsEntity {
     private Integer jangbyeokScore;
     private Integer troubleScore;
     private Integer gakjilScore;
-
-    @Builder
-    public TonerDetailsEntity(ProductEntity product, Integer boseupScore, Integer jinjungScore, Integer jangbyeokScore, Integer troubleScore, Integer gakjilScore) {
-        this.product = product;
-        this.productId = product.getProductId();
-        this.boseupScore = boseupScore;
-        this.jinjungScore = jinjungScore;
-        this.jangbyeokScore = jangbyeokScore;
-        this.troubleScore = troubleScore;
-        this.gakjilScore = gakjilScore;
-    }
 }

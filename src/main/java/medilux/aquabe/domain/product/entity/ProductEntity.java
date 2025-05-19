@@ -1,10 +1,7 @@
 package medilux.aquabe.domain.product.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
@@ -15,6 +12,8 @@ import static org.hibernate.annotations.UuidGenerator.Style.RANDOM;
 @Getter
 @Table(name = "Products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 public class ProductEntity {
 
     @Id
@@ -40,13 +39,14 @@ public class ProductEntity {
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
 
-    @Builder
-    public ProductEntity(String productName, String productImage, int productPrice, String productInfo, String brandName, CategoryEntity category) {
-        this.productName = productName;
-        this.productImage = productImage;
-        this.productPrice = productPrice;
-        this.productInfo = productInfo;
-        this.brandName = brandName;
-        this.category = category;
+    public static ProductEntity of(String productName, String productImage, int productPrice, String productInfo, String brandName, CategoryEntity category) {
+        return ProductEntity.builder()
+                .productName(productName)
+                .productImage(productImage)
+                .productPrice(productPrice)
+                .productInfo(productInfo)
+                .brandName(brandName)
+                .category(category)
+                .build();
     }
 }

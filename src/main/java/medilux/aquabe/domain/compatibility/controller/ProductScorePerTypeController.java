@@ -1,5 +1,6 @@
 package medilux.aquabe.domain.compatibility.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import medilux.aquabe.domain.compatibility.dto.ProductScorePerTypeResponse;
 import medilux.aquabe.domain.compatibility.service.ProductScorePerTypeService;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,8 @@ public class ProductScorePerTypeController {
     }
 
     @GetMapping("/{type_name}/{product_id}")
+    @Operation(summary = "화장품 타입별 점수 조회 api",
+                description = "타입명에 따른 화장품 점수를 반환힙니다.")
     public ResponseEntity<ProductScorePerTypeResponse> getCompatibilityScore(
             @PathVariable("type_name") String typeName,
             @PathVariable("product_id") UUID productId) {

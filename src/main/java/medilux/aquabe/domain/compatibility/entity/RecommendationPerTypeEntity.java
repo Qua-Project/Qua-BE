@@ -12,6 +12,8 @@ import java.util.UUID;
 @Getter
 @Table(name = "RecommendationPerType")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(access = AccessLevel.PRIVATE)
 @IdClass(RecommendationPerTypeEntity.RecommendationPerTypeId.class)
 public class RecommendationPerTypeEntity {
 
@@ -31,13 +33,14 @@ public class RecommendationPerTypeEntity {
     @Column(nullable = false)
     private Integer compatibilityScore; // 궁합 점수
 
-    @Builder
-    public RecommendationPerTypeEntity(String typeName, Integer categoryId, ProductEntity product, Integer ranking, Integer compatibilityScore) {
-        this.typeName = typeName;
-        this.categoryId = categoryId;
-        this.product = product;
-        this.ranking = ranking;
-        this.compatibilityScore = compatibilityScore;
+    public static RecommendationPerTypeEntity of(String typeName, Integer categoryId, ProductEntity product, Integer ranking, Integer compatibilityScore) {
+        return RecommendationPerTypeEntity.builder()
+                .typeName(typeName)
+                .categoryId(categoryId)
+                .product(product)
+                .ranking(ranking)
+                .compatibilityScore(compatibilityScore)
+                .build();
     }
 
     @Getter

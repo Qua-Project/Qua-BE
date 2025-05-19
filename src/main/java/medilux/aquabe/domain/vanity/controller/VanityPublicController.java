@@ -1,7 +1,9 @@
 package medilux.aquabe.domain.vanity.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import medilux.aquabe.common.error.exceptions.BadRequestException;
+import medilux.aquabe.domain.compatibility.entity.CompatibilityRatio;
 import medilux.aquabe.domain.user.repository.UserRepository;
 import medilux.aquabe.domain.vanity.dto.VanityCategoryAverageResponse;
 import medilux.aquabe.domain.vanity.dto.VanityProductResponse;
@@ -28,12 +30,20 @@ public class VanityPublicController {
 
     // 특정 사용자의 화장대 정보 조회 (vanityScore 포함)
     @GetMapping("/{username}")
-    public ResponseEntity<VanityResponse> getUserVanity(@PathVariable("username") String username) {
-        VanityResponse response = vanityPublicService.getUserVanity(username);
+    @Operation(summary = "특정사용자의 화장대 정보조회(+적합도 별) api",
+            description = "username에는 사용자의 이름 입력해주세요<br>"
+                    + "+ 추가로 CompatibilityRatio 타입을 파라미터로 전달하면 해당사용자의 적합도에 따른 화장대 정보조회 가능")
+    public ResponseEntity<VanityResponse> getUserVanity(
+            @PathVariable("username") String username,
+            @RequestParam(value = "compatibilityRatio", required = false) CompatibilityRatio compatibilityRatio
+    ) {
+        VanityResponse response = vanityPublicService.getUserVanity(username, compatibilityRatio);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{username}/categories/{category_id}")
+    @Operation(summary = "사용자의 카테고리별 화장품 조회 api",
+                description = "사용자 이름과 카테고리 id 를입력해주세요. categoryId는 제품 카테고리를 숫자로 입력해주세요 (ex. 1(토너), 2(세럼), 3(로션), 4(크림)).")
     public ResponseEntity<List<VanityProductResponse>> getUserProductsByCategory(
             @PathVariable("username") String username, @PathVariable("category_id") Integer categoryId) {
 
@@ -47,6 +57,8 @@ public class VanityPublicController {
 
 
     @GetMapping("/{username}/categories/{category_id}/average")
+    @Operation(summary = "사용자의 카테고리별 화장품 평균 조회 api",
+            description = "사용자 이름과 카테고리 id 를입력해주세요. categoryId는 제품 카테고리를 숫자로 입력해주세요 (ex. 1(토너), 2(세럼), 3(로션), 4(크림)).")
     public ResponseEntity<VanityCategoryAverageResponse> getUserAverageByCategory(
             @PathVariable("username") String username, @PathVariable("category_id") Integer categoryId) {
 

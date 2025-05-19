@@ -18,8 +18,6 @@ public class UserSignUpResponse {
     private String username;
     private String email;
     private String password;
-    private String telephone;
-    private Integer userAge;
     private String userImage;
     private Gender gender;
     private LocalDate birthDate;

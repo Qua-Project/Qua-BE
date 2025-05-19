@@ -14,7 +14,10 @@ import medilux.aquabe.domain.vanity.repository.UserVanityRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.ZoneId;
 
 import medilux.aquabe.common.error.exceptions.BadRequestException;
 import static medilux.aquabe.common.error.ErrorCode.*;
@@ -62,10 +65,7 @@ public class UserService {
 
 
     private UserEntity createNewKakaoUser(KakaoResponse.KakaoProfile kakaoProfile) {
-        UserEntity newUser = UserEntity.builder()
-                .email(kakaoProfile.getKakaoAccount().getEmail())
-                .build();
-
+        UserEntity newUser = UserEntity.of(kakaoProfile.getKakaoAccount().getEmail());
         return userRepository.save(newUser);
     }
 
@@ -84,10 +84,8 @@ public class UserService {
 
     private UserEntity createNewAppleUser(AppleResponse.AppleUser appleUser) {
 
-        UserEntity newUser = UserEntity.builder()
-                .email(appleUser.getEmail())
-                .appleSub(appleUser.getSub())
-                .build();
+        //디폴트 프로필 이미지 넣기
+        UserEntity newUser = UserEntity.of(appleUser.getEmail(), appleUser.getSub());
 
         return userRepository.save(newUser);
     }
@@ -101,12 +99,23 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
+
+        LocalDate birthDate = user.getBirthDate();
+        Integer userAge = (birthDate != null) ? calculateAge(birthDate) : 0;
+
         return UserResponse.builder()
                 .userId(user.getUserId())
                 .email(user.getEmail())
                 .userImage(user.getUserImage())
+                .birthDate(birthDate)
+                .userAge(userAge)
+                .gender(user.getGender())
                 .username(user.getUsername()).build();
 
+    }
+
+    private Integer calculateAge(LocalDate birthDate) {
+        return Period.between(birthDate, LocalDate.now(ZoneId.systemDefault())).getYears();
     }
 
     // 회원가입
@@ -126,15 +135,7 @@ public class UserService {
 //        }
 
         // 사용자 생성 및 저장
-        UserEntity userEntity = UserEntity.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .telephone(request.getTelephone())
-                .userAge(request.getUserAge())
-                .userImage(imageUrl)
-                .gender(request.getGender())
-                .birthDate(request.getBirthDate())
-                .build();
+        UserEntity userEntity = UserEntity.of(request.getUsername(), request.getEmail(), imageUrl, request.getGender(), request.getBirthDate());
         userRepository.save(userEntity);
 
         // 응답 생성
@@ -144,8 +145,6 @@ public class UserService {
                 .userId(userEntity.getUserId())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
-                .telephone(userEntity.getTelephone())
-                .userAge(userEntity.getUserAge())
                 .userImage(imageUrl)
                 .gender(userEntity.getGender())
                 .birthDate(userEntity.getBirthDate())
@@ -172,13 +171,11 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(loginEmail)
                 .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
 
-        user.update(request.getUsername(), request.getTelephone(), request.getUserAge());
+        user.update(request.getUsername(), request.getBirthDate(), request.getGender());
         userRepository.saveAndFlush(user);
 
         userVanityRepository.findById(user.getUserId()).orElseGet(() -> {
-            UserVanityEntity vanity = UserVanityEntity.builder()
-                    .user(user)
-                    .build();
+            UserVanityEntity vanity = UserVanityEntity.of(user);
 
             userVanityRepository.save(vanity);
             return vanity;
@@ -187,9 +184,8 @@ public class UserService {
         return UserUpdateResponse.builder()
                 .username(user.getUsername())
                 .email(user.getEmail())
-                .telephone(user.getTelephone())
-                .userImage(user.getUserImage())
-                .userAge(user.getUserAge())
+                .birthDate(user.getBirthDate())
+                .gender(user.getGender())
                 .build();
     }
 

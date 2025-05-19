@@ -64,7 +64,7 @@ public class VanityService {
 
         // DTO 변환 후 반환
         List<VanityProductResponse> productResponses = products.stream()
-                .map(p -> new VanityProductResponse(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
+                .map(p -> VanityProductResponse.fromEntity(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
                 .toList();
 
         return new VanityResponse(userId, vanityScore, productResponses);
@@ -74,6 +74,7 @@ public class VanityService {
     // 카테고리별 제품 조회
     @Transactional(readOnly = true)
     public List<VanityProductResponse> getProductsByCategory(UUID userId, Integer categoryId) {
+
         List<VanityProductsEntity> products = vanityProductsRepository.findByUserIdAndProductCategoryCategoryId(userId, categoryId);
 
         if (products.isEmpty()) {
@@ -82,7 +83,7 @@ public class VanityService {
 
         // DTO 변환 후 반환
         return products.stream()
-                .map(p -> new VanityProductResponse(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
+                .map(p -> VanityProductResponse.fromEntity(p.getProduct(), p.getCompatibilityScore(), p.getRanking(), p.getCompatibilityRatio().name()))
                 .toList();
     }
 
@@ -91,6 +92,7 @@ public class VanityService {
     // 카테고리별 제품 점수 평균 조회
     @Transactional(readOnly = true)
     public VanityCategoryAverageResponse getAverageByCategory(UUID userId, Integer categoryId) {
+
         List<VanityProductsEntity> products = vanityProductsRepository.findByUserIdAndProductCategoryCategoryId(userId, categoryId);
 
         // 제품이 없으면 예외
@@ -105,7 +107,7 @@ public class VanityService {
                 .orElse(0.0));
 
         // 평균 적합도 계산
-        CompatibilityRatio averageRatio = calculateAverageCompatibilityRatio(products);
+        CompatibilityRatio averageCompatibilityRatio = calculateAverageCompatibilityRatio(products);
 
         // 점수 초기화
         Integer averageBoseupScore = null, averageJinjungScore = null, averageJangbyeokScore = null, averageTroubleScore = null, averageGakjilScore = null;
@@ -132,10 +134,27 @@ public class VanityService {
             averageGakjilScoreSerum = (int) Math.round(serumDetails.stream().mapToInt(SerumDetailsEntity::getGakjilScore).average().orElse(0.0));
         }
 
-        return new VanityCategoryAverageResponse(averageScore, averageRatio,
-                averageBoseupScore, averageJinjungScore, averageJangbyeokScore, averageTroubleScore, averageGakjilScore,
-                averageJureumScore, averageMibaekScore, averageMogongScore, averageTroubleScoreSerum, averagePijiScore, averageHongjoScore, averageGakjilScoreSerum,
-                averageBoseupScoreLotion, averageJinjungScoreLotion, averageJangbyeokScoreLotion, averageYubunScore, averageJageukScore);
+        return VanityCategoryAverageResponse.builder()
+                .averageScore(averageScore)
+                .averageCompatibilityRatio(averageCompatibilityRatio)
+                .averageBoseupScore(averageBoseupScore)
+                .averageJinjungScore(averageJinjungScore)
+                .averageJangbyeokScore(averageJangbyeokScore)
+                .averageTroubleScore(averageTroubleScore)
+                .averageGakjilScore(averageGakjilScore)
+                .averageJureumScore(averageJureumScore)
+                .averageMibaekScore(averageMibaekScore)
+                .averageMogongScore(averageMogongScore)
+                .averageTroubleScoreSerum(averageTroubleScoreSerum)
+                .averagePijiScore(averagePijiScore)
+                .averageHongjoScore(averageHongjoScore)
+                .averageGakjilScoreSerum(averageGakjilScoreSerum)
+                .averageBoseupScoreLotion(averageBoseupScoreLotion)
+                .averageJinjungScoreLotion(averageJinjungScoreLotion)
+                .averageJangbyeokScoreLotion(averageJangbyeokScoreLotion)
+                .averageYubunScore(averageYubunScore)
+                .averageJageukScore(averageJageukScore)
+                .build();
     }
 
 
@@ -201,14 +220,7 @@ public class VanityService {
             CompatibilityRatio compatibilityRatio = productScore.getCompatibilityRatio(); // 적합도
 
             // 화장대에 제품 추가
-            VanityProductsEntity vanityProduct = VanityProductsEntity.builder()
-                    .userId(userId)
-                    .product(product)
-                    .categoryId(categoryId)
-                    .compatibilityScore(compatibilityScore) // 자동 설정된 점수
-                    .ranking(ranking)
-                    .compatibilityRatio(compatibilityRatio) // 자동 설정된 적합도
-                    .build();
+            VanityProductsEntity vanityProduct = VanityProductsEntity.of(userId, product, categoryId, compatibilityScore, ranking, compatibilityRatio);
 
             vanityProductsRepository.save(vanityProduct);
 
@@ -235,11 +247,8 @@ public class VanityService {
             entity.setFrequencyCnt(entity.getFrequencyCnt() + 1);
             productUsedFrequencyRepository.save(entity);
         } else {
-            ProductUsedFrequencyEntity newEntity = ProductUsedFrequencyEntity.builder()
-                    .productId(productId)
-                    .typeName(skinType)
-                    .frequencyCnt(1)
-                    .build();
+            ProductUsedFrequencyEntity newEntity = ProductUsedFrequencyEntity.of(productId, skinType, 1);
+
             productUsedFrequencyRepository.save(newEntity);
         }
     }
@@ -264,9 +273,7 @@ public class VanityService {
                 .orElseGet(() -> {
                     UserEntity user = userRepository.findById(userId)
                             .orElseThrow(() -> new BadRequestException(ROW_DOES_NOT_EXIST, "존재하지 않는 사용자입니다."));
-                    return UserVanityEntity.builder()
-                            .user(user)
-                            .build();
+                    return UserVanityEntity.of(user);
                 });
 
         userVanity.updateVanityScore(updatedVanityScore);
